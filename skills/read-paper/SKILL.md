@@ -1,0 +1,211 @@
+---
+name: read-paper
+description: Extract concepts, motivation, use cases, and metadata from a bioinformatics method paper to build a knowledge base entry
+argument-hint: [paper-name]
+allowed-tools: Read, Glob, Grep, Write, AskUserQuestion, WebFetch, Bash(mkdir *)
+---
+
+# Read Paper Skill
+
+You are helping build a knowledge base of single-cell bioinformatics methods. Your task is to read a method paper (PDF) and extract key conceptual information.
+
+## Prerequisites & Outputs
+
+**Requires**:
+- A method paper PDF (in cwd or path provided as argument)
+- Optionally: GitHub URL (used by `/learn-code` later)
+
+**Produces**: `knowledge_base/<method>/concept.md` with YAML frontmatter containing `name`, `journal`, `doi`, `github` (if available), `task`, `modality`, `approach`, `language`. Downstream skills (`/learn-code`, `/understand-theory`, `/extract-figures`) read this file.
+
+## Workflow
+
+### Step 1: Identify the Paper
+
+If no paper is specified in `$ARGUMENTS`, list available papers:
+
+```bash
+ls *.pdf
+```
+
+Then ask the user which paper to process.
+
+### Step 2: Gather Additional Information
+
+Ask the user for:
+1. **GitHub URL** (preferred, but optional) - The method's repository
+2. **DOI or paper web link** (optional) - For citation purposes
+
+**If no GitHub URL is provided**: that's acceptable. Set `github: null` in the frontmatter and add a `code_status: no_repo` field. Downstream `/learn-code` will detect this and skip code documentation, marking `code.md` as not applicable. `/extract-figures`, `/understand-theory`, and `/harmonize` work fine without a repo.
+
+### Step 3: Read and Analyze the Paper
+
+Read the PDF file and extract the following information:
+
+#### Metadata (for literature review & search)
+- Method name and version
+- Journal name
+- Publication date
+- First author
+- Last author (senior author)
+- DOI
+
+#### Categorization (use flexible, nestable tags)
+- **Task**: What does this method do? (e.g., normalization, integration, differential_abundance, clustering, annotation, trajectory, etc.)
+- **Modality**: What data types? (e.g., RNA, protein, CITE-seq, ATAC, multimodal, spatial, etc.)
+- **Approach**: What computational approach? Examples:
+  - `deep_learning/transformer`, `deep_learning/VAE`, `deep_learning/autoencoder`
+  - `probabilistic/bayesian`, `probabilistic/GMM`
+  - `regression/linear`, `regression/GLM`
+  - `heuristics`
+  - `graph_based/kNN`, `graph_based/community_detection`
+  - `matrix_factorization/NMF`, `matrix_factorization/PCA`
+- **Language**: Implementation language (R, Python, etc.)
+
+#### Content to Extract
+
+1. **Overview**: One paragraph summary of what the method does
+
+2. **Problem Statement**:
+   - What biological/computational problem does this solve?
+   - Why was this method needed? What gap did it fill?
+
+3. **Motivation & Original Use Cases**:
+   - What examples/datasets did the authors use to demonstrate the method?
+   - What scenarios motivated its development?
+   - This is crucial for later assessing applicability to new use cases
+
+4. **Key Approach** (high-level, conceptual):
+   - Brief description of the algorithm/model
+   - Do NOT go into mathematical details here (that's for `/understand-theory`)
+
+5. **Input Requirements**:
+   - Data types expected (e.g., count matrix, Seurat object, AnnData)
+   - Any preprocessing requirements
+   - Assumptions about the data
+
+6. **Output**:
+   - What does the method produce?
+   - Format of output
+
+7. **Limitations & When NOT to Use**:
+   - Acknowledged limitations from the paper
+   - Scenarios where this method is inappropriate
+   - This is critical for method selection
+
+8. **Benchmarks** (from paper):
+   - How did authors compare to other methods?
+   - What datasets were used for benchmarking?
+   - Key performance claims
+
+9. **Citation**:
+   - Full citation in a standard format
+
+### Step 4: Create the Knowledge Base Entry
+
+Create the output file at: `knowledge_base/<method_name>/concept.md`
+
+Use this template structure:
+
+```markdown
+---
+name: <method_name>
+version: <if mentioned>
+journal: <journal_name>
+publication_date: <YYYY-MM-DD or YYYY-MM>
+first_author: <first_author_name>
+last_author: <last_author_name>
+doi: <doi_url>
+github: <github_url>
+
+task: [<task_tags>]
+modality: [<modality_tags>]
+approach: [<approach_tags>]
+language: <R/Python/etc>
+---
+
+# <Method Name>
+
+## Overview
+
+<One paragraph summary>
+
+## Problem Statement
+
+<What problem does this solve? Why was it needed?>
+
+## Motivation & Original Use Cases
+
+<What examples motivated this method? What datasets did authors use?>
+
+## Key Approach
+
+<High-level description of the algorithm - conceptual, not mathematical>
+
+## Input Requirements
+
+<Data types, formats, preprocessing, assumptions>
+
+## Output
+
+<What does it produce?>
+
+## Limitations & When NOT to Use
+
+<Acknowledged limitations, inappropriate scenarios>
+
+## Benchmarks
+
+<How did it compare to other methods? What datasets were used?>
+
+## Citation
+
+<Full citation>
+
+---
+
+*Generated by /read-paper skill. Related skills: /understand-theory, /learn-code, /extract-figures*
+```
+
+### Step 5: Verify and Refine
+
+Re-read the generated `concept.md` and perform an editorial review:
+
+#### Completeness Check
+- [ ] All YAML metadata fields populated (name, version, journal, dates, authors, doi, github, tags)
+- [ ] All sections present (Overview, Problem Statement, Motivation, Key Approach, Input, Output, Limitations, Benchmarks, Citation)
+- [ ] No placeholder text like "[TODO]" or "[...]" remaining
+
+#### Quality Check
+- [ ] Overview is concise (1-2 paragraphs max) yet comprehensive
+- [ ] Problem Statement clearly articulates the gap this method fills
+- [ ] Limitations section is honest and substantive (not just generic caveats)
+- [ ] Tags are accurate and follow the hierarchical format (e.g., `deep_learning/VAE`)
+
+#### Flow and Clarity
+- [ ] Sections flow logically (problem → solution → application → limitations)
+- [ ] No redundant information repeated across sections
+- [ ] Technical terms are used consistently
+- [ ] Jargon is explained on first use
+
+#### Efficiency Improvements
+- Consolidate any redundant content
+- Tighten verbose explanations while preserving key details
+- Ensure bullet points are parallel in structure
+- Remove filler phrases ("It should be noted that...", "As mentioned above...")
+
+Make corrections directly to the file, then proceed to Step 6.
+
+### Step 6: Confirm Completion
+
+After creating the file, inform the user:
+- Where the file was saved
+- Summary of what was extracted
+- Suggest next steps: `/understand-theory <method>`, `/learn-code <method>`, or `/extract-figures <method>`
+
+## Important Notes
+
+- Focus on **conceptual understanding**, not mathematical details
+- Preserve the **original use cases** from the paper - these are valuable for assessing applicability
+- Be thorough about **limitations** - knowing when NOT to use a method is as important as knowing when to use it
+- Use **flexible tags** - methods can have multiple tasks, modalities, and approaches
+- The GitHub URL will be used by `/learn-code` skill later

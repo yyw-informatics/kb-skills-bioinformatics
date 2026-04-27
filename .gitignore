@@ -1,0 +1,15 @@
+.DS_Store
+*.swp
+*~
+__pycache__/
+*.pyc
+.venv/
+venv/
+.Rhistory
+.RData
+.Rproj.user/
+.claude/
+.codex
+scratch/
+tmp/
+docs/

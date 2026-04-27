@@ -1,0 +1,33 @@
+{
+  "name": "kb-skills-bioinformatics",
+  "version": "0.1.0",
+  "description": "A literature-review and method-evaluation workflow for bioinformatics, shipped as Claude and Codex skills.",
+  "author": {
+    "name": "Yuanyuan Wang"
+  },
+  "keywords": [
+    "bioinformatics",
+    "single-cell",
+    "literature-review",
+    "knowledge-base",
+    "codex-skills",
+    "claude-code-skills"
+  ],
+  "license": "MIT",
+  "skills": "./codex/skills/",
+  "interface": {
+    "displayName": "KB Skills Bioinformatics",
+    "shortDescription": "Build method knowledge bases and project analysis plans from bioinformatics literature.",
+    "longDescription": "Codex adapters for the kb-skills-bioinformatics workflow. Use them to build a reusable method knowledge base, mine project literature, evaluate method fit, and produce analysis plans while preserving the same workflow outputs as the Claude skills.",
+    "developerName": "Yuanyuan Wang",
+    "category": "Productivity",
+    "capabilities": [
+      "Skills"
+    ],
+    "defaultPrompt": [
+      "Build a method knowledge base from this paper with $build-knowledge.",
+      "Run the project pipeline with $run-pipeline for my context file.",
+      "Evaluate which methods fit this project with $evaluate-fit --all."
+    ]
+  }
+}

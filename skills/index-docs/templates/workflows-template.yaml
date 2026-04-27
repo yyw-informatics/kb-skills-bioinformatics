@@ -1,0 +1,70 @@
+# workflows.yaml template
+# Tutorial-derived function clusters
+# Each workflow shows which functions work together for a specific task
+# Links to function_index.yaml via full function names
+
+ecosystem: "{ecosystem}"
+docs_url: "{docs_url}"
+last_sync: "{YYYY-MM-DD}"
+total_workflows: 0
+
+# Validation summary - checks that all referenced functions exist in function_index.yaml
+validation:
+  all_functions_found: true
+  warnings: []
+  # List external packages mentioned in tutorials but not part of this ecosystem
+  external_packages_referenced: []
+
+workflows:
+  # Example workflow entry
+  preprocessing_clustering:
+    name: "Preprocessing and Clustering"
+    tutorial_url: "https://..."
+    category: "basics"
+    goal: "Transform raw counts into clustered, visualized cells"
+    when_to_use: "Starting a standard scRNA-seq analysis"
+
+    steps:
+      # Each step references a function by its full name
+      # The full_name should match an entry in function_index.yaml
+      - function: scanpy.pp.filter_cells
+        purpose: "Remove low-quality cells based on gene counts"
+
+      - function: scanpy.pp.filter_genes
+        purpose: "Remove genes not expressed in enough cells"
+
+      - function: scanpy.pp.normalize_total
+        purpose: "Normalize library size across cells"
+
+      - function: scanpy.pp.log1p
+        purpose: "Log-transform the data"
+
+      - function: scanpy.pp.highly_variable_genes
+        purpose: "Select informative genes for downstream analysis"
+
+      - function: scanpy.tl.pca
+        purpose: "Reduce dimensionality"
+
+      - function: scanpy.pp.neighbors
+        purpose: "Build k-nearest neighbor graph"
+
+      - function: scanpy.tl.umap
+        purpose: "Compute 2D embedding for visualization"
+
+      - function: scanpy.tl.leiden
+        purpose: "Cluster cells into groups"
+
+      - function: scanpy.pl.umap
+        purpose: "Visualize clusters on UMAP"
+        note: "This is the plotting function, not the computation function"
+
+  # Minimal workflow entry (required fields only)
+  another_workflow:
+    name: "Workflow Name"
+    tutorial_url: "https://..."
+    category: "category_name"
+    goal: "What this workflow accomplishes"
+    when_to_use: "When to follow this workflow"
+    steps:
+      - function: package.module.function
+        purpose: "What this step does"

@@ -1,0 +1,39 @@
+# function_index.yaml template
+# Flat index for quick function lookup
+# Use grep/search to find functions by name or related_tasks
+
+ecosystem: "{ecosystem}"
+docs_url: "{docs_url}"
+last_sync: "{YYYY-MM-DD}"
+total_functions: 0
+
+# Functions are keyed by short name for easy lookup
+# Full details allow agent to answer simple questions without fetching
+functions:
+  # Example function entry
+  filter_cells:
+    full_name: "scanpy.pp.filter_cells"
+    module: "preprocessing"
+    url: "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.filter_cells.html"
+    signature: "(adata, min_counts=None, min_genes=None, max_counts=None, max_genes=None, inplace=True)"
+    one_liner: "Filter cell outliers based on counts and numbers of genes expressed"
+    related_tasks:
+      - quality_control
+      - filtering
+      - cell_QC
+      - remove_outliers
+    see_also:
+      - filter_genes
+      - calculate_qc_metrics
+    # Optional: cross-reference to knowledge base
+    kb_references: []
+
+  # Minimal entry (required fields only)
+  some_function:
+    full_name: "package.module.some_function"
+    module: "module_name"
+    url: "https://..."
+    signature: "(param1, param2)"
+    one_liner: "Brief description of what it does"
+    related_tasks: []
+    see_also: []

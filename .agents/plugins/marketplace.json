@@ -1,0 +1,20 @@
+{
+  "name": "kb-skills-bioinformatics-local",
+  "interface": {
+    "displayName": "KB Skills Bioinformatics Local"
+  },
+  "plugins": [
+    {
+      "name": "kb-skills-bioinformatics",
+      "source": {
+        "source": "local",
+        "path": "./codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
