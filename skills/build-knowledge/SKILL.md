@@ -389,7 +389,7 @@ Repository URL is resolved by `/learn-code` (Step 1 of that skill) using this ch
 5. MISSING              (writes no_repo stub, marks phase as resolved-with-skip)
 ```
 
-In **interactive (gated) mode without `--repo=`**: if all chain steps fail and the user has not opted into web search, the orchestrator may ask the user for a URL after `/learn-code` reports MISSING. In **unattended mode** (or when invoked from `/run-pipeline --unattended`): never prompt — accept the MISSING stub and continue, surfacing it in the build summary.
+In **interactive (gated) mode without `--repo=`**: if all chain steps fail and the user has not opted into web search, the orchestrator may ask the user for a URL after `/learn-code` reports MISSING. In **auto mode** (or when invoked from `/run-pipeline --auto`): never prompt — accept the MISSING stub and continue, surfacing it in the build summary.
 
 ### 3.2: Spawn /learn-code Agent
 
@@ -426,7 +426,7 @@ Read the `repo_source` field from the just-written `code.md` frontmatter:
 | `yaml` | high | Continue to Phase 4 |
 | `paper` | high | Continue to Phase 4 |
 | `search` | medium | Continue to Phase 4. Surface in build summary so user can audit the chosen repo. |
-| `none` | n/a | The no_repo stub was written. In gated mode, ask user; in unattended mode, accept and continue. Mark Phase 3 as `resolved-with-skip` in `.build_progress.md`. |
+| `none` | n/a | The no_repo stub was written. In gated mode, ask user; in auto mode, accept and continue. Mark Phase 3 as `resolved-with-skip` in `.build_progress.md`. |
 
 **Do NOT block the build on a search-resolved repo** — that defeats the point of opt-in auto-resolution. Instead, the surfacing in the build summary lets the user catch wrong picks and re-run with `--repo=` if needed.
 

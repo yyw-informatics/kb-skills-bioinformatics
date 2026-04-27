@@ -12,7 +12,7 @@ These skills help you turn raw method papers and biology literature into a struc
 - **Evaluate method fit** — score every method in your KB against your project's data and goals
 - **Design analyses** — produce an ordered, code-ready analytical plan that maps each biological hypothesis to a specific bioinformatics method
 - **Adapt methods to your data** — generate a preliminary run with real EDA and method-specific configuration
-- **Run the whole pipeline unattended** — `/run-pipeline` in Claude or `$run-pipeline` in Codex chains the per-project skills end-to-end, with an optional ensemble + adjudicator mode that swaps interactive review gates for two independent runs of each integrative output plus a third independent reviewer
+- **Run the whole pipeline end-to-end** — `/run-pipeline` in Claude or `$run-pipeline` in Codex chains the per-project skills end-to-end, with an optional ensemble + adjudicator mode that swaps interactive review gates for two independent runs of each integrative output plus a third independent reviewer
 
 ## Pipeline at a glance
 
@@ -59,7 +59,7 @@ Two layers. Layer 1 is a reusable method library; Layer 2 is the per-project ana
 
    ┌──────────────────────────────────────────────────────────────────┐
    │  /run-pipeline  chains the four Layer-2 phases into one command, │
-   │                 with optional unattended ensemble + adjudicator. │
+   │                 with optional end-to-end ensemble + adjudicator. │
    └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -150,12 +150,12 @@ Run the whole Codex project pipeline in one command:
 # Gated: same as running each skill by hand, but chained
 $run-pipeline projects/my_study/context.md --project=my_study
 
-# Unattended end-to-end with default ensemble
-$run-pipeline projects/my_study/context.md --project=my_study --unattended
+# End-to-end with default ensemble
+$run-pipeline projects/my_study/context.md --project=my_study --auto
 
-# Unattended + build new KB entries, skipping figure extraction
+# End-to-end + build new KB entries, skipping figure extraction
 $run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --build-kb=totalVI.pdf,dsb.pdf --skip-figures
+              --auto --build-kb=totalVI.pdf,dsb.pdf --skip-figures
 ```
 
 ### Claude quickstart
@@ -190,22 +190,22 @@ Run the whole Claude project pipeline in one command:
 # Gated: same as running each skill by hand, but chained
 /run-pipeline projects/my_study/context.md --project=my_study
 
-# Unattended end-to-end with default ensemble
-/run-pipeline projects/my_study/context.md --project=my_study --unattended
+# End-to-end with default ensemble
+/run-pipeline projects/my_study/context.md --project=my_study --auto
 
-# Unattended + build new KB entries, skipping figure extraction
+# End-to-end + build new KB entries, skipping figure extraction
 # (figures.md isn't read by /evaluate-fit or /design-analysis, so when you
 #  only need the KB to feed downstream skills, --skip-figures saves the
 #  per-method /extract-figures tokens)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --build-kb=totalVI.pdf,dsb.pdf --skip-figures
+              --auto --build-kb=totalVI.pdf,dsb.pdf --skip-figures
 ```
 
 `--skip-figures` is opt-in (default off); pair it with `--build-kb` when you don't need figure documentation for human reading. It propagates to every per-method build the orchestrator spawns; harmonization and the final review treat `figures.md` as absent for those methods.
 
-#### How unattended quality control works
+#### How end-to-end quality control works
 
-In `--unattended` mode, each integrative output (`0_synthesis_literature.md`, `fitness_summary.md`, `analysis_plan.md`) is produced by an **ensemble + adjudicator** pattern instead of an interactive review gate:
+In `--auto` mode, each integrative output (`0_synthesis_literature.md`, `fitness_summary.md`, `analysis_plan.md`) is produced by an **ensemble + adjudicator** pattern instead of an interactive review gate:
 
 ```
    Step 1: two independent runs
@@ -278,7 +278,6 @@ These skills assume a working directory with this structure:
 <your-project>/
 ├── *.pdf                                  # method papers (for /build-knowledge)
 ├── papers/                                # biology papers (for /mine-paper)
-├── methods.yaml                           # OPTIONAL: method → repo URL overrides
 ├── knowledge_base/
 │   ├── <method>/                          # one folder per method
 │   │   ├── concept.md                     # from /read-paper
@@ -296,18 +295,6 @@ These skills assume a working directory with this structure:
         ├── .repo_manifest.md              # from /run-pipeline pre-flight (if --build-kb used)
         └── <method>_adaptation/           # from /adapt-method
 ```
-
-### Optional: `methods.yaml` (repo overrides)
-
-`/learn-code` resolves a method's GitHub repo URL via this chain: `--repo=<url>` flag → `methods.yaml` → URL extracted from the paper → web search (only with `--web-search-repos`) → MISSING. Add `methods.yaml` at the project root to override paper extraction or fill in repos the paper doesn't list:
-
-```yaml
-totalVI: https://github.com/scverse/scvi-tools
-dsb: https://github.com/niaid/dsb
-ADTnorm: https://github.com/yezhengSTAT/ADTnorm
-```
-
-Web-search resolutions are gated by a 2-of-3 verification check on the candidate's README (method name match, paper linkage, presence of analysis code) — wrong picks fall through to MISSING rather than getting silently used.
 
 You don't need to create everything up-front. Skills create their own subdirectories.
 

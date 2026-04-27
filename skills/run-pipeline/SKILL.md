@@ -1,7 +1,7 @@
 ---
 name: run-pipeline
-description: Orchestrate the full per-project pipeline (mine → synthesize → evaluate → design) end-to-end, with an unattended mode that replaces interactive quality gates with a dual-run + independent adjudicator pattern
-argument-hint: "[context.md] --project=folder [--unattended] [--ensemble=synthesize,evaluate-summary,design] [--phases=mine,synthesize,evaluate,design] [--build-kb=a.pdf,b.pdf] [--methods=m1,m2] [--papers-dir=papers/] [--check-consistency | --no-consistency-check] [--web-search-repos] [--no-preflight] [--skip-figures]"
+description: Orchestrate the full per-project pipeline (mine → synthesize → evaluate → design) end-to-end, with an auto mode that replaces interactive quality gates with a dual-run + independent adjudicator pattern
+argument-hint: "[context.md] --project=folder [--auto] [--ensemble=synthesize,evaluate-summary,design] [--phases=mine,synthesize,evaluate,design] [--build-kb=a.pdf,b.pdf] [--methods=m1,m2] [--papers-dir=papers/] [--check-consistency | --no-consistency-check] [--web-search-repos] [--no-preflight] [--skip-figures]"
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Bash(mkdir *, mv *, cp *, ls *, wc *), Task, TaskOutput, WebSearch, WebFetch
 ---
 
@@ -12,7 +12,7 @@ This skill chains the per-project skills end-to-end so a single invocation takes
 Two modes:
 
 - **Default (gated)** — chains the existing skills with their built-in interactive quality gates (PASS / NEEDS_REVISION / FAIL). You answer prompts between phases, just as you would running them by hand.
-- **Unattended (`--unattended`)** — disables interactive gates. Each *integrative* output runs **twice as independent background agents**; a **third independent adjudicator agent** compares the two, spot-checks the highest-stakes "agreed" claims against source files (catching false consensus), and produces the canonical artifact plus an audit log with a deterministic confidence rubric. After all phases finish, a **fourth, cross-phase consistency auditor** verifies the three integrative outputs cohere with each other. No human in the loop until the pipeline finishes.
+- **Auto (`--auto`)** — disables interactive gates. Each *integrative* output runs **twice as independent background agents**; a **third independent adjudicator agent** compares the two, spot-checks the highest-stakes "agreed" claims against source files (catching false consensus), and produces the canonical artifact plus an audit log with a deterministic confidence rubric. After all phases finish, a **fourth, cross-phase consistency auditor** verifies the three integrative outputs cohere with each other. No human in the loop until the pipeline finishes.
 
 Three integrative outputs are eligible for ensemble:
 - `synthesize` — `0_synthesis_literature.md`
@@ -23,7 +23,7 @@ The token cost story:
 
 - The orchestrator stays small (no phase content ever enters its window).
 - Default mode adds ~zero tokens beyond what the user would spend invoking each skill manually.
-- Unattended mode roughly **2.5×** the cost of each ensembled output (two independent runs + one adjudicator). Per-paper (`/mine-paper`) and per-method (`/evaluate-fit` per-method assessments) extraction work stays single-run — those phases are already parallelized internally over many independent items, and dual-running each item inflates cost without proportional gain. Only the integrative *aggregation* steps benefit from independent re-runs.
+- Auto mode roughly **2.5×** the cost of each ensembled output (two independent runs + one adjudicator). Per-paper (`/mine-paper`) and per-method (`/evaluate-fit` per-method assessments) extraction work stays single-run — those phases are already parallelized internally over many independent items, and dual-running each item inflates cost without proportional gain. Only the integrative *aggregation* steps benefit from independent re-runs.
 
 ---
 
@@ -36,14 +36,14 @@ The token cost story:
 │  - Track progress in projects/<name>/.pipeline_progress.md        │
 │  - Spawn phase agents (background)                                │
 │  - Verify outputs (existence, size, frontmatter, sections)        │
-│  - In unattended+ensemble: spawn v1, v2, then adjudicator         │
+│  - In auto+ensemble: spawn v1, v2, then adjudicator               │
 │  - NEVER reads phase outputs into its own context                 │
 └──────────────────────────────────────────────────────────────────┘
            │
            ├─ (optional) Phase 0: build-knowledge for each --build-kb PDF
            │   ├─ 0.1 pre-flight repo manifest (1 agent: methods.yaml +
            │   │       PDF extraction + optional web search w/ verification)
-           │   ├─ 0.2 surface manifest (gated: AskUserQuestion; unattended: log)
+           │   ├─ 0.2 surface manifest (gated: AskUserQuestion; auto: log)
            │   ├─ 0.3 spawn /build-knowledge per PDF with resolved --repo=
            │   └─ 0.4 verify outputs
            │
@@ -86,14 +86,14 @@ The token cost story:
 
 | Flag | Default | Effect |
 |------|---------|--------|
-| `--unattended` | off | Skip all interactive review gates; use ensemble + adjudicator on the outputs listed in `--ensemble`. |
-| `--ensemble=<list>` | `synthesize,evaluate-summary,design` | Integrative outputs that run twice + adjudicator in unattended mode. Valid: `synthesize`, `evaluate-summary`, `design`. |
+| `--auto` | off | Skip all interactive review gates; use ensemble + adjudicator on the outputs listed in `--ensemble`. |
+| `--ensemble=<list>` | `synthesize,evaluate-summary,design` | Integrative outputs that run twice + adjudicator in auto mode. Valid: `synthesize`, `evaluate-summary`, `design`. |
 | `--phases=<list>` | `mine,synthesize,evaluate,design` | Which phases to actually run. Use to resume or skip. |
 | `--build-kb=<pdfs>` | (none) | If set, run `/build-knowledge` on each PDF before Phase 1. Comma-separated. |
 | `--methods=<list>` | (all KB methods) | Restrict `/evaluate-fit` to these methods. |
 | `--papers-dir=<path>` | `papers/` | Passed through to `/mine-paper --all`. |
-| `--check-consistency` | on in `--unattended`, off in gated | Run the cross-phase consistency auditor (Phase 5) after the integrative outputs are produced. |
-| `--no-consistency-check` | — | Skip Phase 5 even in unattended mode. |
+| `--check-consistency` | on in `--auto`, off in gated | Run the cross-phase consistency auditor (Phase 5) after the integrative outputs are produced. |
+| `--no-consistency-check` | — | Skip Phase 5 even in auto mode. |
 | `--web-search-repos` | off | Allow `/learn-code` (inside Phase 0) to use web search as a fallback when `--repo=`, `methods.yaml`, and `concept.md` extraction all fail. Requires verification (2 of 3 README checks); falls back to MISSING on failed verification. |
 | `--no-preflight` | — | Skip the pre-flight repo manifest (Phase 0.5). Phase 0 still runs but each `/build-knowledge` resolves its own repo independently. |
 | `--skip-figures` | off | Pass `--skip-figures` through to every `/build-knowledge` agent spawned in Phase 0. Skips `/extract-figures` per method; no `figures.md` is written; downstream Phase 0 verification does not require it. Has no effect if `--build-kb` is not set. |
@@ -106,7 +106,7 @@ ls -d projects/{project}
 ls knowledge_base/   # warn if empty and --build-kb not set
 ```
 
-If `--unattended` is set without any `--ensemble` value, default to `synthesize,evaluate-summary,design`.
+If `--auto` is set without any `--ensemble` value, default to `synthesize,evaluate-summary,design`.
 
 If `--build-kb` is **not** set and `knowledge_base/` is empty, abort with: *"No knowledge base entries found. Run `/build-knowledge <paper.pdf>` first, or pass `--build-kb=...` to this command."*
 
@@ -120,7 +120,7 @@ Create `projects/{project}/.pipeline_progress.md`:
 ---
 project: {project}
 started: {timestamp}
-mode: {gated|unattended}
+mode: {gated|auto}
 ensemble: {comma-list or none}
 phases_requested: {comma-list}
 ---
@@ -146,7 +146,7 @@ If a progress file already exists, read it and ask the user:
 - Re-run a specific phase
 - Start fresh (overwrite)
 
-In `--unattended` mode, default to **resume from first non-complete phase** without prompting.
+In `--auto` mode, default to **resume from first non-complete phase** without prompting.
 
 ---
 
@@ -166,7 +166,7 @@ Run all four checks per expected output file:
 For per-paper / per-method batch skills (`/mine-paper --all`, `/evaluate-fit --all`), apply per output file. Failed items go in a per-agent failure list; succeeded items continue. Report a verification table at end of the phase.
 
 In **gated mode**, on any failure: surface to user with options (retry / accept / skip / abort).
-In **unattended mode**, on any failure: write the failure to `.pipeline_progress.md`, mark the phase as `failed`, do **not** retry blindly, and continue with downstream phases that don't depend on the failed output. Halt the pipeline if a downstream phase has a hard dependency.
+In **auto mode**, on any failure: write the failure to `.pipeline_progress.md`, mark the phase as `failed`, do **not** retry blindly, and continue with downstream phases that don't depend on the failed output. Halt the pipeline if a downstream phase has a hard dependency.
 
 ---
 
@@ -295,7 +295,7 @@ Only runs if `--build-kb=<pdfs>` is set.
 
 ### 0.1 Pre-flight Repo Manifest
 
-`/build-knowledge` Phase 3 needs a GitHub URL per method. Resolution can fail silently (paper doesn't list one, extraction picks an old fork, etc.) — in unattended mode, those failures get noticed only after each `/build-knowledge` agent has already burned tokens on phases 1 and 2. The pre-flight pass resolves all repos up front, in one cheap agent, so gaps are surfaced before the heavy work.
+`/build-knowledge` Phase 3 needs a GitHub URL per method. Resolution can fail silently (paper doesn't list one, extraction picks an old fork, etc.) — in auto mode, those failures get noticed only after each `/build-knowledge` agent has already burned tokens on phases 1 and 2. The pre-flight pass resolves all repos up front, in one cheap agent, so gaps are surfaced before the heavy work.
 
 Skip this step with `--no-preflight`.
 
@@ -376,7 +376,7 @@ After the pre-flight agent finishes:
 
 - Verify `projects/{project}/.repo_manifest.md` exists and parses.
 - **In gated mode**: read the manifest, show the user the table with one `AskUserQuestion` covering all MISSING and `confidence: low | medium` entries. The user can supply URLs, accept the defaults, or skip individual methods. Update the manifest before proceeding.
-- **In unattended mode**: do NOT prompt. Accept the manifest as-is. If any entries are MISSING or medium-confidence, log them in `.pipeline_progress.md` and surface in the Final Summary so the user can audit after the pipeline finishes.
+- **In auto mode**: do NOT prompt. Accept the manifest as-is. If any entries are MISSING or medium-confidence, log them in `.pipeline_progress.md` and surface in the Final Summary so the user can audit after the pipeline finishes.
 
 The orchestrator does **not** read the manifest contents into its own context window — only the agent's one-paragraph summary. The manifest stays on disk; downstream `/build-knowledge` agents read it themselves.
 
@@ -387,11 +387,11 @@ For each PDF, spawn `/build-knowledge` as a background agent. Pass through:
 - `--web-search-repos` if the orchestrator was invoked with that flag (gives `/learn-code` permission to search again as a last resort, e.g. if the manifest was outdated or the user asks for a re-resolve)
 - `--skip-figures` if the orchestrator was invoked with that flag (skips Phase 4 `/extract-figures` inside each per-method build)
 
-**In unattended mode**, also include this prompt override:
+**In auto mode**, also include this prompt override:
 
 > "Run in non-interactive mode: on NEEDS_REVISION, auto-refine once with the review's recommendations and then accept; on FAIL, halt that knowledge-base entry but do not block other entries. If `/learn-code` reports MISSING, accept the no_repo stub and continue."
 
-`/build-knowledge` is itself an orchestrator with internal review. It is **not** ensemble-targeted — wrapping it in dual-run would multiply cost across 6 sub-phases per PDF. Trust its internal review with the unattended override above.
+`/build-knowledge` is itself an orchestrator with internal review. It is **not** ensemble-targeted — wrapping it in dual-run would multiply cost across 6 sub-phases per PDF. Trust its internal review with the auto override above.
 
 ### 0.4 Verify
 
@@ -422,13 +422,13 @@ Verify: list `projects/{project}/literature/*_intel.md`, run the verification pr
 
 ## Phase 2: Synthesize Literature
 
-### Single-run path (gated mode, OR unattended without `synthesize` in --ensemble)
+### Single-run path (gated mode, OR auto without `synthesize` in --ensemble)
 
 Spawn `/synthesize-literature {context} --project={project}` and verify `projects/{project}/literature/0_synthesis_literature.md`.
 
 In gated mode: the skill's own review prompts surface naturally.
 
-### Ensemble path (unattended + `synthesize` in --ensemble)
+### Ensemble path (auto + `synthesize` in --ensemble)
 
 Sequential dual-run, then independent adjudicator:
 
@@ -501,7 +501,7 @@ Verify per-method `*_fitness_assessment.md` files and `fitness_summary.md`. In e
 
 Spawn `/design-analysis {synthesis_path} {context_path} --project={project}` and verify `projects/{project}/analysis_plan.md`.
 
-### Ensemble path (unattended + `design` in --ensemble)
+### Ensemble path (auto + `design` in --ensemble)
 
 Sequential v1 → v2 (each renamed to `analysis_plan_v1.md` / `analysis_plan_v2.md`), then spawn the [Adjudicator Pattern](#adjudicator-pattern-shared) with these substitutions:
 
@@ -529,7 +529,7 @@ Phase 5 spawns one final auditor that reads all three integrative outputs and ve
 
 | Mode | Default | How to override |
 |------|---------|-----------------|
-| `--unattended` | ON | `--no-consistency-check` |
+| `--auto` | ON | `--no-consistency-check` |
 | Gated | OFF | `--check-consistency` |
 
 It runs only if all three integrative outputs exist on disk (`0_synthesis_literature.md`, `fitness_summary.md`, `analysis_plan.md`). If any are missing — e.g. `--phases` excluded one — Phase 5 logs "skipped: incomplete inputs" and exits cleanly.
@@ -660,7 +660,7 @@ After all phases complete, write `projects/{project}/.pipeline_summary.md` (and 
 ```markdown
 # Pipeline Run Summary
 
-- Mode: {gated|unattended}
+- Mode: {gated|auto}
 - Ensemble phases: {list or none}
 - Consistency check: {ran|skipped}
 - Started: {ts}
@@ -735,7 +735,7 @@ Review these before running /adapt-method:
 
 Do NOT run /adapt-method until these are resolved. Either:
     - Manually edit the canonical files to address the flagged items, OR
-    - Re-run the affected phases (e.g., /run-pipeline --phases=design --unattended)
+    - Re-run the affected phases (e.g., /run-pipeline --phases=design --auto)
 ```
 
 ---
@@ -747,7 +747,7 @@ State lives entirely on disk:
 - Skill output files — per-phase canonical artifacts
 - `_v1.md` / `_v2.md` / `_adjudication.md` — ensemble artifacts
 
-If interrupted, re-running `/run-pipeline` with the same `--project` reads `.pipeline_progress.md` and resumes from the first non-complete phase. In unattended mode, resumption is silent. In gated mode, the user is asked to confirm.
+If interrupted, re-running `/run-pipeline` with the same `--project` reads `.pipeline_progress.md` and resumes from the first non-complete phase. In auto mode, resumption is silent. In gated mode, the user is asked to confirm.
 
 ---
 
@@ -755,9 +755,9 @@ If interrupted, re-running `/run-pipeline` with the same `--project` reads `.pip
 
 - The orchestrator never reads phase outputs into its own context — only `ls`, `wc`, frontmatter parse, and section header check. Its window stays under ~30k tokens for a full project.
 - Each background agent gets a fresh ~200k window; their context never leaks back to the orchestrator.
-- Unattended ensemble adds 2 extra full runs + 1 adjudicator per ensembled phase. The adjudicator reads only v1, v2, and source-of-truth files — not the entire KB.
+- Auto ensemble adds 2 extra full runs + 1 adjudicator per ensembled phase. The adjudicator reads only v1, v2, and source-of-truth files — not the entire KB.
 - Default ensemble = `synthesize,evaluate-summary,design` (the three integrative outputs). Per-paper (`mine`) and per-method (assessments inside `evaluate`) extraction work is NOT ensembled — parallel agents over many small items already provide natural diversity.
-- For a typical project (~20 papers, ~5 KB methods) in unattended mode, expect roughly: pre-flight repo manifest ≈ 0.1×, mine ≈ 1× × 20 papers, synthesize ≈ 2.5×, per-method assessments ≈ 1× × 5 methods, fitness_summary aggregation ≈ 2.5×, design ≈ 2.5×, cross-phase consistency ≈ 0.2×.
+- For a typical project (~20 papers, ~5 KB methods) in auto mode, expect roughly: pre-flight repo manifest ≈ 0.1×, mine ≈ 1× × 20 papers, synthesize ≈ 2.5×, per-method assessments ≈ 1× × 5 methods, fitness_summary aggregation ≈ 2.5×, design ≈ 2.5×, cross-phase consistency ≈ 0.2×.
 - Pre-flight repo resolution costs ~one cheap agent (PDF metadata grep + optional web searches/fetches). Even with `--web-search-repos` enabled across 5 missing methods, expect ≤ 0.2× of one ensembled phase. The savings vs. resolving inside each `/build-knowledge` are time-of-discovery (gaps surface up front, not after hours of agent work) more than tokens.
 - AGREE-verification spot-checks inside each adjudicator add ~0.1–0.2× to the adjudicator step (the adjudicator reads ~5–10 source-file passages); cost is folded into the 2.5× ensemble multiplier above.
 
@@ -777,44 +777,44 @@ If interrupted, re-running `/run-pipeline` with the same `--project` reads `.pip
 # Default: gated chain, identical to running each skill by hand
 /run-pipeline projects/my_study/context.md --project=my_study
 
-# Unattended end-to-end with default ensemble (synthesize + design)
-/run-pipeline projects/my_study/context.md --project=my_study --unattended
+# Auto end-to-end with default ensemble (synthesize + design)
+/run-pipeline projects/my_study/context.md --project=my_study --auto
 
-# Build KB for two new method papers, then run unattended pipeline
+# Build KB for two new method papers, then run auto pipeline
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --build-kb=totalVI.pdf,dsb.pdf
+              --auto --build-kb=totalVI.pdf,dsb.pdf
 
 # Skip evaluate-fit (e.g. you already have fitness_summary.md from a prior run)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --phases=mine,synthesize,design
+              --auto --phases=mine,synthesize,design
 
 # Ensemble only the design phase (synthesis is fast/uncontroversial for this project)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --ensemble=design
+              --auto --ensemble=design
 
-# Unattended, ensemble synthesis + design but NOT the fitness summary
+# Auto, ensemble synthesis + design but NOT the fitness summary
 # (e.g. you trust the method-vs-method comparison but want extra rigor on the
 # literature synthesis and the final analysis plan)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --ensemble=synthesize,design
+              --auto --ensemble=synthesize,design
 
 # Gated mode but still run the cross-phase consistency audit at the end
 /run-pipeline projects/my_study/context.md --project=my_study \
               --check-consistency
 
-# Unattended but skip the consistency audit (e.g. you'll review by hand)
+# Auto but skip the consistency audit (e.g. you'll review by hand)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --no-consistency-check
+              --auto --no-consistency-check
 
 # Build KB for several papers, allow web search to fill in missing repo URLs
 # (paper-extracted URLs win where present; web search runs only as a last resort
 #  with a 2/3-checks verification gate on each candidate's README)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --build-kb=totalVI.pdf,dsb.pdf,newmethod.pdf \
+              --auto --build-kb=totalVI.pdf,dsb.pdf,newmethod.pdf \
               --web-search-repos
 
 # Skip the pre-flight manifest — let each /build-knowledge resolve its own repo
 # (less batched-friendly; useful only when you're re-running a single method)
 /run-pipeline projects/my_study/context.md --project=my_study \
-              --unattended --build-kb=totalVI.pdf --no-preflight
+              --auto --build-kb=totalVI.pdf --no-preflight
 ```
