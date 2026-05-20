@@ -2,21 +2,23 @@
 
 A literature-review and method-evaluation workflow for bioinformatics, shipped as Claude Code and Codex skills.
 
-These skills help you turn raw method papers and biology literature into a structured, queryable knowledge base — and then map that knowledge onto a specific project to produce a code-ready analysis plan. Originally built for single-cell / CITE-seq work but the workflow is method-agnostic.
+These skills turn raw method papers and biology literature into a structured, queryable knowledge base (KB) — and then map that knowledge onto a specific project to produce a code-ready analysis plan. Originally built for single-cell / CITE-seq work; the workflow is method-agnostic.
 
-## What you can do
+## Why
 
-- **Build a method knowledge base** — read a paper PDF, extract concepts, theory, code, and figures into structured markdown
-- **Mine biology literature** — extract directly actionable intelligence (gene lists, marker panels, frequencies) from research papers, filtered by your project context
-- **Synthesize across papers** — find consensus, conflicts, and novel cross-paper hypotheses
-- **Evaluate method fit** — score every method in your KB against your project's data and goals
-- **Design analyses** — produce an ordered, code-ready analytical plan that maps each biological hypothesis to a specific bioinformatics method
-- **Adapt methods to your data** — generate a preliminary run with real EDA and method-specific configuration
-- **Run the whole pipeline end-to-end** — `/run-pipeline` in Claude or `$run-pipeline` in Codex chains the per-project skills end-to-end, with an optional ensemble + adjudicator mode that swaps interactive review gates for two independent runs of each integrative output plus a third independent reviewer
+### What is this, and who's it for?
 
-## Pipeline at a glance
+Skills for a bench biologist + their computational collaborator (or LLM). You drop in method papers and biology PDFs, describe your project once in a `context.md`, and the skills build a reusable method knowledge base, mine the literature for findings relevant to your project, score each method against your data, and produce an ordered analysis plan.
 
-Two layers. Layer 1 is a reusable method library; Layer 2 is the per-project analytical workflow. Build Layer 1 once per method, reuse across all your projects.
+### What problem does it solve?
+
+Three gaps: too many papers to scan, too many methods to evaluate, and the chasm between "I've read it" and "I have a plan I can implement." Each gap gets its own skill family — literature mining + cross-paper synthesis, method KB + fit scoring, and integrated analysis design.
+
+## How
+
+### How does the pipeline fit together?
+
+Two layers. Layer 1 is a reusable method library (build once per method). Layer 2 is the per-project pipeline driven by your `context.md`.
 
 ```
               Layer 1: METHOD KNOWLEDGE  (one-time per method, reusable)
@@ -63,149 +65,41 @@ Two layers. Layer 1 is a reusable method library; Layer 2 is the per-project ana
    └──────────────────────────────────────────────────────────────────┘
 ```
 
-See [docs/workflow.md](docs/workflow.md) for the full skill DAG and per-phase detail.
+Per-phase narrative and the full skill DAG: [docs/workflow.md](docs/workflow.md).
 
-## Install
+### How do I install it?
 
-### Codex local plugin
+Three options:
 
-From the repo root:
+- **Codex local plugin** — `codex plugin marketplace add ./ && codex`, then install **KB Skills Bioinformatics** from `/plugins`. Skills as `$read-paper`, `$build-knowledge`, etc.
+- **Claude plugin** — `/plugin marketplace add yyw-informatics/kb-skills-bioinformatics && /plugin install kb-skills-bioinformatics@yyw-informatics`. Skills as `/kb-skills-bioinformatics:read-paper`.
+- **Claude symlink** — `ln -s ~/code/kb-skills-bioinformatics/skills ~/.claude/skills`. Skills as `/read-paper`.
 
-```bash
-codex plugin marketplace add ./
-codex
-```
+Detail and update instructions: [docs/getting-started.md](docs/getting-started.md).
 
-Open `/plugins`, install **KB Skills Bioinformatics**, then invoke skills explicitly with `$read-paper`, `$build-knowledge`, `$run-pipeline`, etc.
+### What's the smallest useful run?
 
-The root Codex plugin manifest lives at `.codex-plugin/plugin.json`. The installable Codex package lives under `codex/` so current Codex CLIs can resolve a non-empty local marketplace path, and its adapter skills are generated into `codex/skills/` from the Claude-facing `skills/` tree.
-
-### Claude plugin
-
-Once published to a public Git host:
+One method KB entry + one project + the whole project pipeline in a single command:
 
 ```bash
-/plugin marketplace add <your-org>/kb-skills-bioinformatics
-/plugin install kb-skills-bioinformatics@<your-org>
-```
-
-Skills become available as `/kb-skills-bioinformatics:read-paper`, etc. The Claude plugin manifest remains `.claude-plugin/plugin.json`.
-
-### Claude symlink
-
-```bash
-git clone <repo-url> ~/code/kb-skills-bioinformatics
-
-# User-wide (available in any project)
-ln -s ~/code/kb-skills-bioinformatics/skills ~/.claude/skills
-
-# Or per-project
-ln -s ~/code/kb-skills-bioinformatics/skills .claude/skills
-```
-
-Skills become available as `/read-paper`, `/build-knowledge`, etc.
-
-To update either local install: `git -C ~/code/kb-skills-bioinformatics pull`. Symlinks track the live tree, no relink needed. After changing source skills, run `python3 scripts/sync_codex_skills.py` to refresh Codex adapters.
-
-## Quickstart
-
-In a new project directory:
-
-```bash
-mkdir my-project && cd my-project
-mkdir knowledge_base projects
-```
-
-Drop your method-paper PDFs in the root, then:
-
-### Codex quickstart
-
-```bash
-# Build a knowledge base entry for one method
-$build-knowledge totalVI.pdf
-
-# Set up a project context (use templates/project-context.md as starting point)
-mkdir projects/my_study
-cp <repo>/templates/project-context.md projects/my_study/context.md
-# Edit projects/my_study/context.md to describe your data
-
-# Mine biology papers for actionable findings
-$mine-paper --all projects/my_study/context.md --project=my_study
-
-# Cross-paper synthesis
-$synthesize-literature projects/my_study/context.md --project=my_study
-
-# Evaluate which methods fit your project
-$evaluate-fit --all projects/my_study/context.md --project=my_study
-
-# Produce an integrated analysis plan
-$design-analysis projects/my_study/literature/0_synthesis_literature.md \
-                 projects/my_study/context.md \
-                 --project=my_study
-```
-
-Run the whole Codex project pipeline in one command:
-
-```bash
-# Gated: same as running each skill by hand, but chained
-$run-pipeline projects/my_study/context.md --project=my_study
-
-# End-to-end with default ensemble
-$run-pipeline projects/my_study/context.md --project=my_study --auto
-
-# End-to-end + build new KB entries, skipping figure extraction
-$run-pipeline projects/my_study/context.md --project=my_study \
-              --auto --build-kb=totalVI.pdf,dsb.pdf --skip-figures
-```
-
-### Claude quickstart
-
-```bash
-# Build a knowledge base entry for one method
+# Claude
 /build-knowledge totalVI.pdf
-
-# Set up a project context (use templates/project-context.md as starting point)
-mkdir projects/my_study
-cp <repo>/templates/project-context.md projects/my_study/context.md
-# Edit projects/my_study/context.md to describe your data
-
-# Mine biology papers for actionable findings
-/mine-paper --all projects/my_study/context.md --project=my_study
-
-# Cross-paper synthesis
-/synthesize-literature projects/my_study/context.md --project=my_study
-
-# Evaluate which methods fit your project
-/evaluate-fit --all projects/my_study/context.md --project=my_study
-
-# Produce an integrated analysis plan
-/design-analysis projects/my_study/literature/0_synthesis_literature.md \
-                 projects/my_study/context.md \
-                 --project=my_study
-```
-
-Run the whole Claude project pipeline in one command:
-
-```bash
-# Gated: same as running each skill by hand, but chained
-/run-pipeline projects/my_study/context.md --project=my_study
-
-# End-to-end with default ensemble
 /run-pipeline projects/my_study/context.md --project=my_study --auto
 
-# End-to-end + build new KB entries, skipping figure extraction
-# (figures.md isn't read by /evaluate-fit or /design-analysis, so when you
-#  only need the KB to feed downstream skills, --skip-figures saves the
-#  per-method /extract-figures tokens)
-/run-pipeline projects/my_study/context.md --project=my_study \
-              --auto --build-kb=totalVI.pdf,dsb.pdf --skip-figures
+# Codex
+$build-knowledge totalVI.pdf
+$run-pipeline projects/my_study/context.md --project=my_study --auto
 ```
 
-`--skip-figures` is opt-in (default off); pair it with `--build-kb` when you don't need figure documentation for human reading. It propagates to every per-method build the orchestrator spawns; harmonization and the final review treat `figures.md` as absent for those methods.
+You need `projects/my_study/context.md` (copy from [templates/project-context.md](templates/project-context.md); see [docs/context-fields.md](docs/context-fields.md) for which fields drive which skill behaviors) and at least one biology paper in `papers/`. Per-skill walkthrough: [docs/getting-started.md](docs/getting-started.md).
 
-#### How end-to-end quality control works
+### Should I run skills by hand or use `/run-pipeline`?
 
-In `--auto` mode, each integrative output (`0_synthesis_literature.md`, `fitness_summary.md`, `analysis_plan.md`) is produced by an **ensemble + adjudicator** pattern instead of an interactive review gate:
+`/run-pipeline` chains the four project-pipeline phases (mine → synthesize → evaluate → design) into one invocation and is the right default once the workflow is familiar. Run by hand when iterating on a single phase, debugging a specific output, or learning what each skill does. The orchestrator never reads phase content into its own context — each phase runs as an isolated background agent. Full DAG and per-phase detail: [docs/workflow.md](docs/workflow.md).
+
+### How do I get more reliable results?
+
+Pass `--auto` to `/run-pipeline`. Each integrative output — `0_synthesis_literature.md`, `fitness_summary.md`, `analysis_plan.md` — is then produced by two independent agents with isolated context windows, and resolved by a third adjudicator that reads the source files to settle disagreements and spot-check consensus. A fourth cross-phase auditor checks the three outputs agree at the end.
 
 ```
    Step 1: two independent runs
@@ -234,70 +128,22 @@ In `--auto` mode, each integrative output (`0_synthesis_literature.md`, `fitness
                              consensus)
 ```
 
-Three things happen that an interactive gate or a single-pass run can't:
+What this catches that a single pass can't:
 
-1. **Real disagreements between v1 and v2** are surfaced. The adjudicator reads source files to settle them.
-2. **False consensus is caught.** If v1 and v2 both hallucinate the same plausible-sounding claim, the adjudicator spot-checks the high-stakes "AGREE" claims against source files and demotes anything unsupported.
-3. **A deterministic confidence rubric** (counts of AGREE / DISAGREE-resolved / DISAGREE-flagged / UNIQUE-kept / UNIQUE-dropped → `High` / `Medium` / `Low`) is written to the audit log — anyone can recount and verify.
+1. **Real disagreements** between v1 and v2, settled by the adjudicator against source files.
+2. **False consensus** — if v1 and v2 both hallucinate the same plausible-sounding claim, the adjudicator spot-checks high-stakes AGREE claims against sources and demotes anything unsupported.
+3. **Inter-phase inconsistency** — the cross-phase auditor catches, e.g., a method rated Poor still appearing in the plan, or a marker that won in synthesis but is missing from the plan.
 
-After all phases finish, a **fourth, cross-phase consistency auditor** reads `0_synthesis_literature.md`, `fitness_summary.md`, and `analysis_plan.md` together and verifies they agree on the load-bearing claims (which markers won, which method won, hypothesis-to-method mapping, no use of methods rated Poor / Not Recommended without justification).
+Each adjudication writes an audit log, and the pipeline summary flags any output that warrants closer review and identifies the file to inspect. Rubric detail in [docs/workflow.md](docs/workflow.md).
 
-If anything is flagged, the pipeline summary tells you exactly which file to open and what to look for. The ensemble + audit cost is roughly 2.5× per ensembled output; per-paper mining and per-method assessments stay single-run.
+Only the three integrative outputs are multi-pass. Per-paper mining (`*_intel.md`) and per-method evaluation (`*_fitness_assessment.md`) stay single-pass — those are extraction over many independent items and already get diversity from parallel agents. Cost in `--auto`: roughly 2.5× per ensembled output; everything else unchanged.
 
-Each skill's `SKILL.md` documents its prerequisites, arguments, and outputs. Read those for details on individual skills, and [skills/run-pipeline/SKILL.md](skills/run-pipeline/SKILL.md) for the orchestrator.
+## What if
 
-## Repo layout
+### What if I want to add a new method to the knowledge base?
 
-```
-kb-skills-bioinformatics/
-├── .claude-plugin/plugin.json   # Claude plugin manifest
-├── .codex-plugin/plugin.json    # Codex plugin manifest
-├── .agents/plugins/
-│   └── marketplace.json         # repo-local Codex marketplace entry
-├── skills/                      # Claude-compatible source skills
-├── codex/
-│   ├── .codex-plugin/plugin.json # installable Codex package manifest
-│   └── skills/                   # generated Codex adapter mirror
-├── scripts/
-│   ├── sync_codex_skills.py     # regenerate/check Codex adapters
-│   └── validate_codex_plugin.py # validate Codex packaging
-├── templates/
-│   ├── project-context.md       # starting point for projects/<name>/context.md
-│   ├── CLAUDE.md                # drop-in for downstream projects
-│   ├── AGENTS.md                # Codex equivalent for downstream projects
-│   └── directory-layout.md      # explains the convention
-├── README.md
-└── LICENSE
-```
+`/build-knowledge <paper.pdf>` orchestrates `/read-paper` → `/understand-theory` → `/learn-code` → `/extract-figures` → `/harmonize` → `/review-knowledge` for a single method. Each phase runs in its own background context window so a long build doesn't exhaust the orchestrator. Pass `--supplement=<supp.pdf>` to fold in supplementary material, `--repo=<github-url>` to point `/learn-code` at the source, or `--skip-figures` when you only need the KB to feed downstream skills.
 
-## Convention: project directory layout
+---
 
-These skills assume a working directory with this structure:
-
-```
-<your-project>/
-├── *.pdf                                  # method papers (for /build-knowledge)
-├── papers/                                # biology papers (for /mine-paper)
-├── knowledge_base/
-│   ├── <method>/                          # one folder per method
-│   │   ├── concept.md                     # from /read-paper
-│   │   ├── theory.md                      # from /understand-theory
-│   │   ├── code.md                        # from /learn-code
-│   │   └── figures.md                     # from /extract-figures
-│   └── ecosystems/                        # from /index-docs
-│       └── <package>/
-└── projects/
-    └── <project_name>/
-        ├── context.md                     # YOUR project context (required input)
-        ├── literature/                    # from /mine-paper, /synthesize-literature
-        ├── bioinformatics/                # from /evaluate-fit
-        ├── analysis_plan.md               # from /design-analysis
-        ├── .repo_manifest.md              # from /run-pipeline pre-flight (if --build-kb used)
-        └── <method>_adaptation/           # from /adapt-method
-```
-
-You don't need to create everything up-front. Skills create their own subdirectories.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+Each skill's `SKILL.md` documents its prerequisites, arguments, and outputs. Project working-directory layout: [templates/directory-layout.md](templates/directory-layout.md). License: MIT — see [LICENSE](LICENSE).

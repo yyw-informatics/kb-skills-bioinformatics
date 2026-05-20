@@ -12,9 +12,9 @@
 ## 1) Dataset & design
 
 - **Study question**: {one sentence — what biological question are you answering?}
-- **Comparison(s)**: {e.g., "young vs aged"; "treated vs control"; "Day 0 vs Day 7"}
+- **Comparison(s)**: {e.g., "treated vs control"; "responder vs non-responder"; "baseline vs follow-up"}
 - **Assay / technology**: {e.g., "10x Chromium 3' v3.1 + Feature Barcoding (CITE-seq)"; "Smart-seq2"; "Visium spatial"}
-- **Biology**: {what cells, tissue, organism — e.g., "PBMC NK + ILC enriched, human"}
+- **Biology**: {what cells, tissue, organism — e.g., "PBMC T cell enriched, human"}
 - **Sample structure**: {N donors, N samples, N libraries, replicate structure}
 - **Technical replicates** *(optional)*: {which donors / conditions have replicates}
 
@@ -36,25 +36,23 @@ For multi-modal data (CITE-seq, spatial protein, etc.), list the exact panel:
 
 | Marker | Gene symbol | Status | Notes |
 |--------|-------------|--------|-------|
-| {CD7}  | {CD7}       | functional | |
-| {CD127} | {IL7R}     | **non-functional** | {e.g., "antibody is mouse-reactive, does not bind human"} |
-| ...    | ...         | ...    | |
+| {Marker_A}  | {GENE_A}       | functional | |
+| {Marker_B}  | {GENE_B}       | **non-functional** | {brief reason — e.g., "high background", "failed QC", "uninformative in this dataset"} |
+| ...         | ...            | ...        | |
 
 For RNA-only data, omit this section or note "full transcriptome, no targeted panel."
 
-**Critical**: flag every non-functional / broken marker. Skills will downstream-substitute (e.g., "use IL7R RNA in place of broken CD127 ADT") only if you mark it here.
+**Critical**: flag every non-functional / broken marker. Skills will downstream-substitute the corresponding RNA in place of a broken protein ADT (or vice versa) only if you mark it here.
 
 ## 4) Reference gates / ground truth *(optional)*
 
 If the project has a reference classification (flow gates, sorted populations, expert annotation), document the hierarchy here. Skills use this as a benchmark for annotation strategies.
 
 ```
-Example:
-  NK:   CD3- CD56+
-  ILC:  Lin- CD127+
-    ILC1: Lin- CD127+ c-Kit- CRTH2-
-    ILC2: Lin- CD127+ CRTH2+
-    ILC3: Lin- CD127+ c-Kit+ CRTH2-
+Example (replace with your panel):
+  Parent_type:    Marker_A+ Marker_B-
+    Subtype_1:    Marker_A+ Marker_B- Marker_C+
+    Subtype_2:    Marker_A+ Marker_B- Marker_C- Marker_D+
 ```
 
 ## 5) Sequencing / QC characteristics
@@ -69,21 +67,17 @@ If your project domain uses common protein names interchangeably with gene symbo
 
 ```yaml
 gene_aliases:
-  CRTH2: PTGDR2
-  CD117: KIT
-  CD127: IL7R
-  CD16: FCGR3A
-  CD56: NCAM1
-  T-bet: TBX21
-  RORgt: RORC
+  ProteinName1: GENE_SYMBOL1
+  ProteinName2: GENE_SYMBOL2
+  # e.g. CD56: NCAM1, T-bet: TBX21
 ```
 
 ## 7) Analysis goals & priorities
 
 What do you actually want to learn from this dataset? Be concrete — these guide hypothesis ranking and method selection:
 
-1. {Primary question — e.g., "Which cell types change in frequency between young and aged?"}
-2. {Secondary question — e.g., "What transcriptional programs differ within ILC2 between conditions?"}
+1. {Primary question — e.g., "Which cell types change in frequency between conditions?"}
+2. {Secondary question — e.g., "What transcriptional programs differ within a target cell type between conditions?"}
 3. {Tertiary / exploratory — e.g., "Are there novel cell states we haven't annotated?"}
 
 ## 8) Constraints
