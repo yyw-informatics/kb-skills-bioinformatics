@@ -197,7 +197,7 @@ Key results from completed phases:
 
 ## Total cost (approximate)
 
-- Method KB: ~5 hours of agent runtime across 11 methods (mostly background)
+- Method KB: ~30–45 min wall-clock for 11 methods running in parallel as background agents (each ~30 min of agent runtime)
 - Literature mining: ~25 minutes for the initial batch of papers in parallel; incremental for later additions
 - Synthesis: ~5 minutes per regeneration (use `--update` for incremental merges)
 - Fitness evaluation: ~10 minutes for 11 methods in parallel
