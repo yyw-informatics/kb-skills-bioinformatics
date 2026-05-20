@@ -40,7 +40,7 @@ Two layers. Layer 1 is a reusable method library (build once per method). Layer 
    + context.md                                      (your data,
         │                                            constraints)
         ▼                                                 │
-   /mine-paper ──► literature/*_intel.md                  │
+   /mine-paper ──► literature/*_evidence.md                  │
                           │                               │
                           ▼                               ▼
                 /synthesize-literature              /evaluate-fit ◄── knowledge_base/
@@ -119,7 +119,7 @@ Pass `--auto` to `/run-pipeline`. Each integrative output — `0_synthesis_liter
    output_v2.md  ──┼──►  Adjudicator    ──►  output.md
                    │     (fresh context)     (canonical)
    source files  ──┘     - settles DISAGREE
-   (intel /               - drops ungrounded   output_adjudication.md
+   (evidence /               - drops ungrounded   output_adjudication.md
     assessments /           UNIQUE items       (counts → confidence:
     context.md)           - spot-checks         High / Medium / Low,
                             high-stakes         flagged_items)
@@ -136,7 +136,7 @@ What this catches that a single pass can't:
 
 Each adjudication writes an audit log, and the pipeline summary flags any output that warrants closer review and identifies the file to inspect. Rubric detail in [docs/workflow.md](docs/workflow.md).
 
-Only the three integrative outputs are multi-pass. Per-paper mining (`*_intel.md`) and per-method evaluation (`*_fitness_assessment.md`) stay single-pass — those are extraction over many independent items and already get diversity from parallel agents. Cost in `--auto`: roughly 2.5× per ensembled output; everything else unchanged.
+Only the three integrative outputs are multi-pass. Per-paper mining (`*_evidence.md`) and per-method evaluation (`*_fitness_assessment.md`) stay single-pass — those are extraction over many independent items and already get diversity from parallel agents. Cost in `--auto`: roughly 2.5× per ensembled output; everything else unchanged.
 
 ## What if
 

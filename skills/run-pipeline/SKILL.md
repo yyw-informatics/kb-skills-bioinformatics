@@ -48,7 +48,7 @@ The token cost story:
            │   └─ 0.4 verify outputs
            │
            ▼
-   Phase 1: /mine-paper --all       ──► literature/<paper>_intel.md
+   Phase 1: /mine-paper --all       ──► literature/<paper>_evidence.md
            │
            ▼
    Phase 2: /synthesize-literature  ──► literature/0_synthesis_literature.md
@@ -414,7 +414,7 @@ Task(
 
 Wait via `TaskOutput(block: true, timeout: 1_800_000)`.
 
-Verify: list `projects/{project}/literature/*_intel.md`, run the verification protocol per file. Record list of accepted intel files.
+Verify: list `projects/{project}/literature/*_evidence.md`, run the verification protocol per file. Record list of accepted evidence files.
 
 **No ensemble** — each paper is mined independently and `/mine-paper --all` already parallelizes internally.
 
@@ -464,11 +464,11 @@ mv projects/{project}/literature/0_synthesis_literature.md \
 |-------------|-------|
 | `V1_PATH` | `projects/{project}/literature/0_synthesis_literature_v1.md` |
 | `V2_PATH` | `projects/{project}/literature/0_synthesis_literature_v2.md` |
-| `SOURCE_FILES` | `projects/{project}/context.md` and all `projects/{project}/literature/*_intel.md` |
+| `SOURCE_FILES` | `projects/{project}/context.md` and all `projects/{project}/literature/*_evidence.md` |
 | `PHASE_CRITERIA` | (a) Mouse-derived data must stay labeled separately from human consensus — never silently promote mouse findings to "consensus". (b) Every consensus claim requires a `[Author Year]` citation list. (c) **High-stakes AGREE claims for spot-check**: consensus markers cited as backed by 3+ papers, top-ranked hypotheses in the master ranking, gene signatures with claimed cross-paper provenance. |
 | `CANONICAL_PATH` | `projects/{project}/literature/0_synthesis_literature.md` |
 | `AUDIT_PATH` | `projects/{project}/literature/0_synthesis_literature_adjudication.md` |
-| `CITATION_FORMAT` | `[Author Year]` referencing the intel files |
+| `CITATION_FORMAT` | `[Author Year]` referencing the evidence files |
 
 After adjudicator completes, run the Output Verification Protocol on both files and parse the rubric block per the shared pattern. If `human_review_needed: true`, queue a warning for the Final Summary (do not block downstream phases).
 
@@ -671,7 +671,7 @@ After all phases complete, write `projects/{project}/.pipeline_summary.md` (and 
 | Phase | Status | Output | Confidence | Flagged Items |
 |-------|--------|--------|------------|---------------|
 | 0: build-kb | ✓ / ✗ / skipped | N method KBs | per-method `repo_source` (flag/yaml/paper/search/none) | methods with `none` or `search` |
-| 1: mine | ✓ / ✗ | N intel files | n/a | n/a |
+| 1: mine | ✓ / ✗ | N evidence files | n/a | n/a |
 | 2: synthesize | ✓ / ✗ | 0_synthesis_literature.md | High/Med/Low | <count> |
 | 3: evaluate | ✓ / ✗ | fitness_summary.md | High/Med/Low | <count> |
 | 4: design | ✓ / ✗ | analysis_plan.md | High/Med/Low | <count> |

@@ -37,7 +37,7 @@ Sub-skills `/read-paper`, `/understand-theory`, `/learn-code`, `/extract-figures
 
 | Skill | Use when | Key output |
 |-------|----------|-----------|
-| `/mine-paper --all projects/<name>/context.md --project=<name>` | extracting actionable findings from biology papers in `papers/` | `projects/<name>/literature/<paper>_intel.md` |
+| `/mine-paper --all projects/<name>/context.md --project=<name>` | extracting actionable findings from biology papers in `papers/` | `projects/<name>/literature/<paper>_evidence.md` |
 | `/synthesize-literature projects/<name>/context.md --project=<name>` | producing cross-paper consensus, conflicts, and hypothesis ranking | `projects/<name>/literature/0_synthesis_literature.md` |
 | `/evaluate-fit --all projects/<name>/context.md --project=<name>` | scoring every method in the knowledge base against the project | `projects/<name>/bioinformatics/<method>_fitness_assessment.md` + `fitness_summary.md` |
 | `/design-analysis projects/<name>/literature/0_synthesis_literature.md projects/<name>/context.md --project=<name>` | integrating biology hypotheses + bioinformatics fitness into an ordered, code-ready plan | `projects/<name>/analysis_plan.md` |

@@ -805,7 +805,7 @@ Bash: rm projects/{project}/.design_extract_*.md
 ```
 projects/{project}/
 ├── literature/
-│   ├── *_intel.md                      # Individual paper intel
+│   ├── *_evidence.md                      # Individual paper evidence
 │   └── 0_synthesis_literature.md          # Biology synthesis (input)
 ├── bioinformatics/
 │   ├── fitness_summary.md               # Method overview (input)

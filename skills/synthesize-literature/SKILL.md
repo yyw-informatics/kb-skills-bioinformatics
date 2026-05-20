@@ -1,13 +1,13 @@
 ---
 name: synthesize-literature
-description: Synthesize cross-paper consensus knowledge and testable hypotheses from mined literature intel files
+description: Synthesize cross-paper consensus knowledge and testable hypotheses from mined literature evidence files
 argument-hint: "context-file.md --project=folder [--refresh | --update] [--review=file.md]"
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash(mkdir *), Bash(wc *), Bash(cp *), Task, TaskOutput
 ---
 
 # Synthesize Literature Skill
 
-You are synthesizing **cross-paper intelligence** from individually mined research paper intel files. This is NOT about summarizing individual papers — that was already done by `/mine-paper`. You are **cross-referencing, deduplicating, voting, and generating novel insights** that emerge only when multiple papers are considered together.
+You are synthesizing **cross-paper evidence** from individually mined research paper evidence files. This is NOT about summarizing individual papers — that was already done by `/mine-paper`. You are **cross-referencing, deduplicating, voting, and generating novel insights** that emerge only when multiple papers are considered together.
 
 ## Critical Principles
 
@@ -30,13 +30,13 @@ You are synthesizing **cross-paper intelligence** from individually mined resear
 ```
 /synthesize-literature projects/{project}/context.md --project={project} --refresh
 ```
-Re-runs full synthesis from ALL intel files. If `0_synthesis_literature.md` already exists, it will be overwritten. Use when you want a clean rebuild (e.g., after editing intel files or changing project context).
+Re-runs full synthesis from ALL evidence files. If `0_synthesis_literature.md` already exists, it will be overwritten. Use when you want a clean rebuild (e.g., after editing evidence files or changing project context).
 
 ### Mode 3: Update (incremental integration)
 ```
 /synthesize-literature projects/{project}/context.md --project={project} --update
 ```
-Detects NEW intel files not yet included in the existing synthesis. Extracts only the new papers, then spawns a **merge agent** that integrates them into the existing `0_synthesis_literature.md`. Much faster than `--refresh` when adding a few papers to a large existing synthesis.
+Detects NEW evidence files not yet included in the existing synthesis. Extracts only the new papers, then spawns a **merge agent** that integrates them into the existing `0_synthesis_literature.md`. Much faster than `--refresh` when adding a few papers to a large existing synthesis.
 
 Requires an existing `0_synthesis_literature.md` — if none exists, falls back to standard (Mode 1).
 
@@ -50,24 +50,24 @@ Passes an external literature review markdown as **supplementary context** to th
 - Additional references and mechanistic themes from the wider field
 - Cross-study context that strengthens or challenges hypotheses
 
-The review is used as supporting context, NOT as primary data. Claims from external reviews are cited as `[External Review]` and do not count toward consensus tiers (which require mined intel files with provenance).
+The review is used as supporting context, NOT as primary data. Claims from external reviews are cited as `[External Review]` and do not count toward consensus tiers (which require mined evidence files with provenance).
 
 ---
 
 ## Architecture: Two-Phase Orchestrator
 
-**Why two phases?** Intel files can total 200-400KB of markdown. Reading all of them plus producing a synthesis output exceeds a single context window. The solution: extraction agents compress each paper's intel into a compact structured format, then a synthesis agent cross-references the compressed data.
+**Why two phases?** Evidence files can total 200-400KB of markdown. Reading all of them plus producing a synthesis output exceeds a single context window. The solution: extraction agents compress each paper's evidence into a compact structured format, then a synthesis agent cross-references the compressed data.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                   ORCHESTRATOR (you, lightweight)                │
 │  1. Read project context ONCE                                   │
-│  2. Discover intel files, split into balanced batches            │
+│  2. Discover evidence files, split into balanced batches            │
 │  3. Spawn 3 extraction agents in parallel (background)          │
 │  4. Wait for all agents                                         │
 │  5. Spawn 1 synthesis agent                                     │
 │  6. Verify output, clean up, report                             │
-│  DO NOT read any intel files yourself — save context             │
+│  DO NOT read any evidence files yourself — save context             │
 └─────────────────────────────────────────────────────────────────┘
          │              │              │
          ▼              ▼              ▼
@@ -101,13 +101,13 @@ When `--update` is specified, the orchestrator follows a lighter path: only new 
 ┌─────────────────────────────────────────────────────────────────┐
 │                   ORCHESTRATOR (you, lightweight)                │
 │  1. Read existing synthesis YAML frontmatter                    │
-│  2. Discover ALL intel files, diff against synthesized list     │
+│  2. Discover ALL evidence files, diff against synthesized list     │
 │  3. Report new papers found                                     │
 │  4. Extract ONLY new papers (1-2 batches max)                   │
 │  5. Wait for extraction                                         │
 │  6. Spawn 1 MERGE agent (old synthesis + new extracts + review) │
 │  7. Verify output, clean up, report delta                       │
-│  DO NOT read any intel files yourself — save context             │
+│  DO NOT read any evidence files yourself — save context             │
 └─────────────────────────────────────────────────────────────────┘
          │
          ▼
@@ -150,12 +150,12 @@ Validation:
 
 ---
 
-## Step 1: Discover Intel Files
+## Step 1: Discover Evidence Files
 
-Find all intel files:
+Find all evidence files:
 
 ```
-Glob: projects/{project}/literature/*_intel.md
+Glob: projects/{project}/literature/*_evidence.md
 ```
 
 Exclude files starting with `.` (hidden files like `.mining_progress.md`).
@@ -163,11 +163,11 @@ Exclude files starting with `.` (hidden files like `.mining_progress.md`).
 Count and report:
 
 ```
-Found {n} intel files in projects/{project}/literature/
+Found {n} evidence files in projects/{project}/literature/
 Papers: {short_name_1}, {short_name_2}, ...
 ```
 
-If no intel files found: **"No intel files found. Run `/mine-paper --all` first to mine your papers."** and STOP.
+If no evidence files found: **"No evidence files found. Run `/mine-paper --all` first to mine your papers."** and STOP.
 
 ### Standard/Refresh mode behavior:
 If `0_synthesis_literature.md` already exists and neither `--refresh` nor `--update` was specified: ask the user if they want to overwrite.
@@ -176,15 +176,15 @@ If `0_synthesis_literature.md` already exists and neither `--refresh` nor `--upd
 If `--update` was specified:
 
 1. Read the YAML frontmatter of `projects/{project}/literature/0_synthesis_literature.md`
-2. Extract the list of paper slugs already synthesized. The paper slugs are derived from intel filenames — e.g., `jaeger_diversity_group1_ilc_intel.md` → `jaeger_diversity_group1_ilc`. To match against the frontmatter's `papers_high`, `papers_moderate`, `papers_low` lists (which use `[Author Year]` format), read Appendix A of the existing synthesis to get the filename-to-citation mapping.
-3. Diff the discovered intel files against the already-synthesized list.
+2. Extract the list of paper slugs already synthesized. The paper slugs are derived from evidence filenames — e.g., `jaeger_diversity_group1_ilc_evidence.md` → `jaeger_diversity_group1_ilc`. To match against the frontmatter's `papers_high`, `papers_moderate`, `papers_low` lists (which use `[Author Year]` format), read Appendix A of the existing synthesis to get the filename-to-citation mapping.
+3. Diff the discovered evidence files against the already-synthesized list.
 4. Report:
 
 ```
 ## Update Mode: Paper Diff
 
 Existing synthesis: {m} papers (synthesized {date})
-Current intel files: {n} total
+Current evidence files: {n} total
 New papers to integrate: {k}
   - {new_paper_1}
   - {new_paper_2}
@@ -192,8 +192,8 @@ New papers to integrate: {k}
 Already synthesized: {m} (will be preserved)
 ```
 
-5. If no new papers found: **"All {n} intel files are already in the synthesis. Nothing to update. Use `--refresh` for a full rebuild."** and STOP.
-6. Continue to Step 2 with only the NEW intel files marked for extraction.
+5. If no new papers found: **"All {n} evidence files are already in the synthesis. Nothing to update. Use `--refresh` for a full rebuild."** and STOP.
+6. Continue to Step 2 with only the NEW evidence files marked for extraction.
 
 ---
 
@@ -229,12 +229,12 @@ After Step 2, the flow diverges based on mode:
 
 Get file sizes:
 ```
-Bash: wc -c projects/{project}/literature/*_intel.md
+Bash: wc -c projects/{project}/literature/*_evidence.md
 ```
 
 Sort files by size descending. Assign to 3 batches using round-robin on sorted list (largest file → batch 1, second → batch 2, third → batch 3, fourth → batch 1, etc.). This ensures roughly balanced total sizes across batches.
 
-If there are fewer than 6 intel files, use 2 batches instead. If fewer than 3, use 1 batch (single extraction agent).
+If there are fewer than 6 evidence files, use 2 batches instead. If fewer than 3, use 1 batch (single extraction agent).
 
 Report the batch assignments:
 
@@ -256,12 +256,12 @@ Task(
     description: "Extract batch {batch_num}",
     run_in_background: true,
     prompt: |
-        You are extracting compact structured data from literature intel files
+        You are extracting compact structured data from literature evidence files
         for a cross-paper synthesis.
 
         ## Your Inputs
         - **Project context file**: {context_file_path}
-        - **Intel files to process** (read ALL of these):
+        - **Evidence files to process** (read ALL of these):
           {file_path_1}
           {file_path_2}
           {file_path_3}
@@ -277,9 +277,9 @@ Task(
         - Experimental design (groups, comparisons)
         - Enrichment strategy
 
-        ### 2. Read each intel file and extract compact structured data
+        ### 2. Read each evidence file and extract compact structured data
 
-        For EACH intel file, read the full file, then produce a compact extraction
+        For EACH evidence file, read the full file, then produce a compact extraction
         following this EXACT format. Be thorough but compact — include ALL markers,
         ALL gene signatures, ALL hypotheses. Do not summarize away specific gene names
         or numbers.
@@ -295,17 +295,17 @@ Task(
         | Gene | Cell Type | Confidence | ADT? |
         |------|-----------|------------|------|
         | {gene} | {cell_type} | {High/Mod/Low} | {YES/NO/BROKEN} |
-        (Include EVERY marker gene mentioned in the intel file's marker tables)
+        (Include EVERY marker gene mentioned in the evidence file's marker tables)
 
         ### Gene Signatures
         - {signature_name}: [{GENE1}, {GENE2}, {GENE3}, ...]
-        (Include EVERY gene signature from the intel file's Python code blocks.
+        (Include EVERY gene signature from the evidence file's Python code blocks.
          Use the variable name as signature_name. List ALL genes.)
 
         ### Frequencies
         | Cell Type | Frequency | Population | Tissue |
         |-----------|----------|------------|--------|
-        (Include ALL frequency data from the intel file)
+        (Include ALL frequency data from the evidence file)
 
         ### Gating Strategy
         {One-paragraph summary of the gating hierarchy recommended by this paper,
@@ -315,7 +315,7 @@ Task(
         | ID | Prediction | Theme | Direction | Evidence |
         |----|-----------|-------|-----------|----------|
         | H1 | {specific prediction} | {aging/vaccination/composition/plasticity/metabolism/other} | {increase/decrease/stable/shift} | {Strong/Moderate/Weak} ({brief basis}) |
-        (Include EVERY hypothesis from the intel file)
+        (Include EVERY hypothesis from the evidence file)
 
         ### Translation Gaps
         | Gap | Severity |
@@ -414,7 +414,7 @@ Task(
           Read this file for broader conceptual framing and additional
           mechanistic themes. Cite as [External Review] when it adds context
           beyond the mined papers. External review claims do NOT count toward
-          consensus tiers — only mined intel files with provenance do.
+          consensus tiers — only mined evidence files with provenance do.
 
         ## Critical Principles
         1. Every claim must cite supporting papers by [Author Year]
@@ -749,7 +749,7 @@ These steps are followed ONLY when `--update` is specified. They replace Steps 3
 
 ## Step U1: Extract New Papers Only
 
-### U1a: Get file sizes of NEW intel files only
+### U1a: Get file sizes of NEW evidence files only
 
 ```
 Bash: wc -c {new_file_1} {new_file_2} ...
@@ -772,7 +772,7 @@ Batch 1 ({n} papers, ~{size}KB): {paper_list}
 ### U1c: Spawn extraction agents
 
 Use the **same extraction agent prompt** as Step 4, but:
-- Only process the NEW intel files
+- Only process the NEW evidence files
 - Write to `.update_extract_{batch_num}.md` instead of `.synthesis_extract_{batch_num}.md`
 
 Spawn all batch agents simultaneously (parallel).
@@ -943,10 +943,10 @@ Task(
         {IF --review was specified:}
         Use the external review to identify mechanistic themes or conceptual
         frameworks that connect old and new papers in ways not captured by
-        the individual intel files. For example, if the review introduces a
+        the individual evidence files. For example, if the review introduces a
         framework or concept that connects findings from multiple papers,
         generate hypotheses linking that concept to specific markers/genes
-        from the mined intel. Cite as [External Review] + [Author Year] for
+        from the mined evidence. Cite as [External Review] + [Author Year] for
         the specific data.
 
         ### 14. Recompute Master Hypothesis Ranking (Section 2.5)
@@ -1130,8 +1130,8 @@ Do NOT delete the backup file — keep `.0_synthesis_literature_pre_update.md` f
 
 ```
 projects/{project}/literature/
-├── {paper1}_intel.md                    # Individual paper intel (from /mine-paper)
-├── {paper2}_intel.md
+├── {paper1}_evidence.md                    # Individual paper evidence (from /mine-paper)
+├── {paper2}_evidence.md
 ├── ...
 ├── .mining_progress.md                  # Mining progress tracker
 ├── .synthesis_extract_1.md              # TEMPORARY (deleted after standard/refresh synthesis)

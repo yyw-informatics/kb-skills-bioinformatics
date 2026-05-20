@@ -37,7 +37,7 @@ For auto end-to-end runs, `/run-pipeline` wraps the per-project phases (Phases 3
    biology paper PDFs + projects/<name>/context.md
         │
         ▼
-   /mine-paper --all                        → projects/<name>/literature/<paper>_intel.md
+   /mine-paper --all                        → projects/<name>/literature/<paper>_evidence.md
         │
         ▼
    /synthesize-literature                   → projects/<name>/literature/0_synthesis_literature.md
@@ -95,7 +95,7 @@ Drop biology papers in `papers/` (or root), then:
 /mine-paper --all projects/my_study/context.md --project=my_study --dir=papers/
 ```
 
-Each paper is screened for relevance against your context. Irrelevant papers get a one-paragraph "NOT USEFUL" verdict and stop. Relevant papers produce structured intel files with directly-actionable items (gene lists, marker panels, gating strategies translated to your panel) and hypothesis-generating items (predictions to test in your data).
+Each paper is screened for relevance against your context. Irrelevant papers get a one-paragraph "NOT USEFUL" verdict and stop. Relevant papers produce structured evidence files with directly-actionable items (gene lists, marker panels, gating strategies translated to your panel) and hypothesis-generating items (predictions to test in your data).
 
 ### Phase 4: Synthesize across papers
 
@@ -155,8 +155,8 @@ You don't have to run the full pipeline. Common standalone uses:
 | `/review-knowledge` | `<method>/*.md` | review report |
 | `/build-knowledge` | paper PDF | orchestrates all of the above |
 | `/index-docs` | docs URL | `ecosystems/<pkg>/*.yaml` + `navigation.md` |
-| `/mine-paper` | biology paper + `context.md` | `<paper>_intel.md` |
-| `/synthesize-literature` | `<paper>_intel.md` files + `context.md` | `0_synthesis_literature.md` |
+| `/mine-paper` | biology paper + `context.md` | `<paper>_evidence.md` |
+| `/synthesize-literature` | `<paper>_evidence.md` files + `context.md` | `0_synthesis_literature.md` |
 | `/evaluate-fit` | `concept.md` files + `context.md` | `<method>_fitness_assessment.md` + `fitness_summary.md` |
 | `/design-analysis` | synthesis + fitness summary + concept.md files + ecosystem indexes | `analysis_plan.md` |
 | `/adapt-method` | KB entry + actual data | `<method>_adaptation/` |
@@ -188,7 +188,7 @@ In `--auto`, the interactive PASS / NEEDS_REVISION / FAIL gates are replaced wit
 
 1. The phase runs **twice as fully independent background agents** with identical prompts and isolated context windows. They cannot see each other's work.
 2. Their outputs are written to `<artifact>_v1.md` and `<artifact>_v2.md`.
-3. A **third independent adjudicator agent** reads both versions plus the source-of-truth inputs (intel files, per-method assessments, context.md, etc.) and produces:
+3. A **third independent adjudicator agent** reads both versions plus the source-of-truth inputs (evidence files, per-method assessments, context.md, etc.) and produces:
    - The canonical artifact (`<artifact>.md`) with each claim classified as AGREE / DISAGREE-resolved / UNIQUE-kept-or-dropped.
    - An audit log (`<artifact>_adjudication.md`) with reasoning, a `confidence_score`, and a `human_review_needed` flag.
 
@@ -200,7 +200,7 @@ Three integrative outputs are eligible. By default all three are ensembled in `-
 | `fitness_summary.md` | evaluate (aggregation) | Picks the primary recommended method and pipeline ordering |
 | `analysis_plan.md` | design | Maps every biology hypothesis to a specific method + parameters |
 
-**What is NOT ensembled**: per-paper mining (`*_intel.md`) and per-method assessments (`*_fitness_assessment.md`). These are extraction-style work over many independent items; parallel agents already provide natural diversity, and dual-running each item would multiply token cost without proportional benefit. Token cost in auto mode is roughly `2.5×` on each ensembled integrative output, with everything else unchanged.
+**What is NOT ensembled**: per-paper mining (`*_evidence.md`) and per-method assessments (`*_fitness_assessment.md`). These are extraction-style work over many independent items; parallel agents already provide natural diversity, and dual-running each item would multiply token cost without proportional benefit. Token cost in auto mode is roughly `2.5×` on each ensembled integrative output, with everything else unchanged.
 
 To pick which outputs get the ensemble treatment:
 
@@ -220,4 +220,4 @@ After the pipeline finishes, check each `*_adjudication.md` audit log. If `human
 
 ## Worked example
 
-See [examples/cite-seq-aging.md](examples/cite-seq-aging.md) for a complete worked example on a CITE-seq study showing the full skill composition.
+See [examples/cite-seq-example.md](examples/cite-seq-example.md) for a complete worked example on a CITE-seq study showing the full skill composition.

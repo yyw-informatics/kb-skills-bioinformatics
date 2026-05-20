@@ -30,7 +30,7 @@ The skills assume a project directory with this structure. You don't need to cre
         ├── context.md                 # (create) YOU write this, using templates/project-context.md
         │
         ├── literature/                # /mine-paper, /synthesize-literature
-        │   ├── <paper-slug>_intel.md  # one per paper
+        │   ├── <paper-slug>_evidence.md  # one per paper
         │   ├── 0_synthesis_literature.md
         │   ├── literature_summary.md
         │   └── .mining_progress.md
@@ -62,7 +62,7 @@ The skills assume a project directory with this structure. You don't need to cre
 
 - Method directories: lowercase or paper's preferred capitalization (e.g., `totalVI/`, `dsb/`, `ADTnorm/`)
 - Project directories: `snake_case` (e.g., `cite_seq_aging`, `mouse_brain_atlas`)
-- Paper intel slugs: `<first-author-lastname>_<2-3-keywords>` (e.g., `hazenberg_human_ilcs`)
+- Paper evidence slugs: `<first-author-lastname>_<2-3-keywords>` (e.g., `hazenberg_human_ilcs`)
 
 ## What's NOT versioned (when committing to Git)
 

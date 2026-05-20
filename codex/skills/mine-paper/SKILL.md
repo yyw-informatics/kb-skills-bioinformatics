@@ -1,6 +1,6 @@
 ---
 name: mine-paper
-description: "Extract actionable intelligence and testable hypotheses from a biology/research paper for a specific project context"
+description: "Extract actionable evidence and testable hypotheses from a biology/research paper for a specific project context"
 ---
 
 # Codex Adapter
@@ -20,7 +20,7 @@ Preserve the shared workflow contract: `knowledge_base/`, `projects/<name>/liter
 
 # Mine Paper Skill
 
-You are extracting **actionable intelligence** from biology/research papers for a specific experimental project. This is NOT about understanding a bioinformatics method — it is about mining a research paper for concrete information (gene names, marker panels, cell frequencies, gating strategies, expected biology) that can be directly applied to the user's analysis or generate testable hypotheses from their data.
+You are extracting **actionable evidence** from biology/research papers for a specific experimental project. This is NOT about understanding a bioinformatics method — it is about mining a research paper for concrete information (gene names, marker panels, cell frequencies, gating strategies, expected biology) that can be directly applied to the user's analysis or generate testable hypotheses from their data.
 
 ## Critical Principles
 
@@ -103,7 +103,7 @@ Runs in the current context window. Follow Steps 0-9 directly.
 └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
        │               │               │               │
        ▼               ▼               ▼               ▼
-  paper1_intel.md  paper2_intel.md  paper3_intel.md  paperN_intel.md
+  paper1_evidence.md  paper2_evidence.md  paper3_evidence.md  paperN_evidence.md
                                                         │
                                          ┌──────────────┘
                                          ▼
@@ -220,7 +220,7 @@ unrelated tissue compartment, incompatible technology, no extractable molecular 
 Be concrete about which aspects of the user's project this paper cannot address.}
 ```
 
-Save to `projects/{project}/literature/{paper_slug}_intel.md` and STOP. Do not proceed to Step 3.
+Save to `projects/{project}/literature/{paper_slug}_evidence.md` and STOP. Do not proceed to Step 3.
 
 ### Step 3: Deep Read (Full Paper)
 
@@ -278,7 +278,7 @@ Check later pages for supplementary tables — these are gold mines:
 Read(file_path: "{paper_path}", pages: "{supplement_pages}")
 ```
 
-### Step 4: Extract Directly Actionable Intelligence
+### Step 4: Extract Directly Actionable Evidence
 
 **Skip this section entirely for LOW RELEVANCE papers — go to Step 5.**
 
@@ -295,7 +295,7 @@ An item is "directly actionable" ONLY if ALL of these are true:
 
 Items that fail any criterion go to "Hypothesis-Generating" (Step 5) instead.
 
-#### Categories of Directly Actionable Intelligence
+#### Categories of Directly Actionable Evidence
 
 **4a: Cell Type Markers for Annotation**
 
@@ -354,7 +354,7 @@ Limitations:
 
 Specific technical insights relevant to user's data (minimum gene counts, doublet markers, ambient contamination markers, etc.)
 
-### Step 5: Extract Hypothesis-Generating Intelligence
+### Step 5: Extract Hypothesis-Generating Evidence
 
 These are findings that cannot be directly applied today but suggest what to look for in the data.
 
@@ -386,11 +386,11 @@ Unexpected findings worth investigating in user's data.
 
 ### Step 6: Translation Gap Assessment
 
-For every piece of extracted intelligence, document translation gaps honestly.
+For every piece of extracted evidence, document translation gaps honestly.
 
 #### Translation Gap Matrix
 
-| Gap Type | Paper Context | User's Context | Severity | Impact on Intelligence | Mitigation |
+| Gap Type | Paper Context | User's Context | Severity | Impact on Evidence | Mitigation |
 |----------|---------------|----------------|----------|------------------------|------------|
 | Species | Mouse | Human | HIGH | Gene names may differ, biology may not translate | Use ortholog mapping; treat as hypothesis only |
 | Species | Human | Human | NONE | Direct translation | N/A |
@@ -407,7 +407,7 @@ For each gap:
 
 ### Step 7: Generate Output File
 
-Create the output at: `projects/{project}/literature/{paper_slug}_intel.md`
+Create the output at: `projects/{project}/literature/{paper_slug}_evidence.md`
 
 Where `{paper_slug}` is derived from the filename:
 - Extract author surname and 2-3 key words
@@ -439,7 +439,7 @@ technology: [{technologies used}]
 translation_gaps: [{list of gap types}]
 ---
 
-# Intelligence Report: {Short Paper Title}
+# Evidence Report: {Short Paper Title}
 ## For: {Project Title}
 
 ### Paper Overview
@@ -464,7 +464,7 @@ translation_gaps: [{list of gap types}]
 
 ---
 
-### Section 1: Directly Actionable Intelligence
+### Section 1: Directly Actionable Evidence
 
 > Items in this section can be used in your analysis code TODAY. Each item has been
 > verified against your specific data capabilities (ADT panel, RNA availability,
@@ -512,7 +512,7 @@ Limitations:
 
 ---
 
-### Section 2: Hypothesis-Generating Intelligence
+### Section 2: Hypothesis-Generating Evidence
 
 > Items in this section suggest what to LOOK FOR in your data. They require
 > validation and should be treated as hypotheses, not established facts for
@@ -590,7 +590,7 @@ Leave blank if this is the first paper mined.}
 
 ### Step 8: Verify and Refine
 
-Re-read the generated intel file and check:
+Re-read the generated evidence file and check:
 
 #### Honesty Check
 - [ ] Every "directly actionable" item passes the Actionability Filter (measurable, specific, applicable, implementable)
@@ -634,7 +634,7 @@ Present a concise summary:
 2. {Most important hypothesis}
 3. {Most important caveat/translation gap}
 
-**Output saved**: `projects/{project}/literature/{paper_slug}_intel.md`
+**Output saved**: `projects/{project}/literature/{paper_slug}_evidence.md`
 
 **Suggested next steps**:
 - Mine additional papers: `/mine-paper "{next_paper.pdf}" {context_file}`
@@ -653,7 +653,7 @@ Extract from `$ARGUMENTS`:
 - **context_file.md** (required): Project context file path
 - **--project=folder** (optional): Project folder name under `projects/`
 - **--dir=path** (optional): Directory containing PDFs (defaults to current directory)
-- **--force**: Re-process papers that already have intel files
+- **--force**: Re-process papers that already have evidence files
 
 ### Step P1: Discover Papers
 
@@ -663,13 +663,13 @@ ls {dir}/*.pdf
 
 If `--papers` specified, validate each file exists.
 
-### Step P2: Check for Existing Intel Files
+### Step P2: Check for Existing Evidence Files
 
 ```bash
-ls projects/{project}/literature/*_intel.md 2>/dev/null
+ls projects/{project}/literature/*_evidence.md 2>/dev/null
 ```
 
-Skip papers that already have intel files (unless `--force`).
+Skip papers that already have evidence files (unless `--force`).
 
 Report to user:
 ```markdown
@@ -723,13 +723,13 @@ Task(
     subagent_type: "general-purpose",
     description: "Mine {paper_short_name}",
     prompt: |
-        You are mining a biology/research paper for actionable intelligence
+        You are mining a biology/research paper for actionable evidence
         for a specific experimental project.
 
         ## Your Inputs
         - **Paper PDF**: {paper_path}
         - **Project context file**: {context_file_path}
-        - **Output file**: projects/{project}/literature/{paper_slug}_intel.md
+        - **Output file**: projects/{project}/literature/{paper_slug}_evidence.md
 
         ## Your Task
         Follow this exact workflow:
@@ -760,7 +760,7 @@ Task(
         Read the full paper systematically (methods, results, figures, supplements).
         For large PDFs (>15 pages), read in targeted page ranges.
 
-        ### 4. Extract Directly Actionable Intelligence (HIGH/MODERATE only)
+        ### 4. Extract Directly Actionable Evidence (HIGH/MODERATE only)
         Apply the Actionability Filter (measurable + specific + applicable + implementable):
         - Cell type markers (RNA + protein, cross-referenced against user's ADT panel)
         - Gene signatures as copy-paste Python lists
@@ -771,7 +771,7 @@ Task(
         CRITICAL: If an ADT antibody is broken/non-functional in the user's data,
         flag it EVERY TIME that marker appears. Suggest RNA alternatives.
 
-        ### 5. Extract Hypothesis-Generating Intelligence
+        ### 5. Extract Hypothesis-Generating Evidence
         - Age-related changes, pathway predictions, cell composition shifts
         - Stimulation/vaccination responses (if applicable to user's timepoints)
         - Novel/exploratory leads
@@ -783,7 +783,7 @@ Task(
         - What is lost, what survives, how to bridge
 
         ### 7. Write output file
-        Create: projects/{project}/literature/{paper_slug}_intel.md
+        Create: projects/{project}/literature/{paper_slug}_evidence.md
         Ensure directory exists: mkdir -p projects/{project}/literature
 
         Use the structured template with YAML frontmatter including:
@@ -805,7 +805,7 @@ Task(
         GENE_SIGNATURES: [count]
         HYPOTHESES: [count]
         TRANSLATION_GAPS: [count]
-        OUTPUT_FILE: projects/{project}/literature/{paper_slug}_intel.md
+        OUTPUT_FILE: projects/{project}/literature/{paper_slug}_evidence.md
     ,
     run_in_background: true
 )
@@ -855,13 +855,13 @@ for each agent_id:
 Background agents can complete successfully without writing the expected file (e.g., due to sandboxed Write denials). Apply the **Output Verification Protocol** to each agent's output:
 
 ```bash
-ls -la projects/{project}/literature/{paper_slug}_intel.md
-wc -l projects/{project}/literature/{paper_slug}_intel.md
+ls -la projects/{project}/literature/{paper_slug}_evidence.md
+wc -l projects/{project}/literature/{paper_slug}_evidence.md
 ```
 
-Each intel file must pass all four checks:
+Each evidence file must pass all four checks:
 1. **Existence**: file exists on disk
-2. **Size**: ≥ 500 bytes (a NOT USEFUL stub is shorter than a full intel file but still has a verdict; anything below this threshold is a write failure)
+2. **Size**: ≥ 500 bytes (a NOT USEFUL stub is shorter than a full evidence file but still has a verdict; anything below this threshold is a write failure)
 3. **Frontmatter**: YAML parses and contains `paper:`, `relevance:` fields
 4. **Verdict**: relevance is one of HIGH/MODERATE/LOW/NOT USEFUL
 
@@ -875,7 +875,7 @@ For any agent whose output fails verification:
 
 ### Step P9: Generate Literature Summary
 
-After all evaluations complete, read each `_intel.md` file and create `projects/{project}/literature/literature_summary.md`:
+After all evaluations complete, read each `_evidence.md` file and create `projects/{project}/literature/literature_summary.md`:
 
 ```markdown
 ---
@@ -944,7 +944,7 @@ Hypotheses supported by multiple papers:
 
 ## Recommended Analysis Strategy
 
-Based on the accumulated intelligence:
+Based on the accumulated evidence:
 
 1. **Cell type annotation**: {strategy using consolidated markers}
 2. **Primary comparison ({user's comparison})**: {what to test first}
@@ -953,8 +953,8 @@ Based on the accumulated intelligence:
 
 ## Individual Reports
 
-- [{paper_1_slug}_intel.md]({paper_1_slug}_intel.md)
-- [{paper_2_slug}_intel.md]({paper_2_slug}_intel.md)
+- [{paper_1_slug}_evidence.md]({paper_1_slug}_evidence.md)
+- [{paper_2_slug}_evidence.md]({paper_2_slug}_evidence.md)
 - ...
 
 ---
@@ -985,7 +985,7 @@ Evaluated **{n} papers** for your {project} project.
 
 ### Files Generated:
 - Summary: `projects/{project}/literature/literature_summary.md`
-- Individual reports: `projects/{project}/literature/*_intel.md`
+- Individual reports: `projects/{project}/literature/*_evidence.md`
 
 ### Top Recommendations:
 1. {Most confident annotation strategy from consolidated markers}
@@ -1006,7 +1006,7 @@ If a mining agent times out (>10 minutes):
 ### PDF Read Failures
 If a PDF cannot be read (corrupt, too large, password-protected):
 - Log the error
-- Create a minimal intel file noting the failure
+- Create a minimal evidence file noting the failure
 - Continue to next paper
 
 ### Missing Context File
@@ -1039,12 +1039,12 @@ If context file cannot be found:
 │       └── literature/                    # Mining outputs
 │           ├── .mining_progress.md        # Progress (batch mode)
 │           ├── literature_summary.md      # Cross-paper summary (batch mode)
-│           ├── <paper-slug-1>_intel.md
-│           ├── <paper-slug-2>_intel.md
+│           ├── <paper-slug-1>_evidence.md
+│           ├── <paper-slug-2>_evidence.md
 │           └── ...
 └── .claude/skills/                        # this set of skills
 ```
 
 ---
 
-*This skill bridges the gap between reading papers and applying their findings. It transforms passive literature review into active intelligence extraction, producing machine-readable and human-actionable output.*
+*This skill bridges the gap between reading papers and applying their findings. It transforms passive literature review into active evidence extraction, producing machine-readable and human-actionable output.*

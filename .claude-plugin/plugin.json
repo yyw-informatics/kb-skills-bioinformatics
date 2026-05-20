@@ -1,7 +1,7 @@
 {
   "name": "kb-skills-bioinformatics",
   "version": "0.1.0",
-  "description": "A literature-review and method-evaluation workflow for bioinformatics, shipped as Claude Code skills. Read papers, build a method knowledge base, mine biology literature for actionable intelligence, evaluate fit to a project, and design analyses.",
+  "description": "A literature-review and method-evaluation workflow for bioinformatics, shipped as Claude Code skills. Read papers, build a method knowledge base, mine biology literature for actionable evidence, evaluate fit to a project, and design analyses.",
   "author": {
     "name": "Yuanyuan Wang"
   },

@@ -37,13 +37,13 @@ If you only fill in four things accurately, fill these:
 
 ## Worked example: how one broken marker propagates
 
-In the [CITE-seq aging example](examples/cite-seq-aging.md), one ADT marker (CD127) was found to be non-functional in the dataset. The project's `context.md` marked CD127 status as `non-functional` in the measurement panel table (§3).
+In the [CITE-seq worked example](examples/cite-seq-example.md), one ADT marker (Marker_X, with corresponding RNA GENE_X) was found to be non-functional in the dataset. The project's `context.md` marked Marker_X status as `non-functional` in the measurement panel table (§3).
 
 Every downstream skill saw this and acted:
 
-- `/mine-paper` — every intel file that quoted a CD127-based ILC gate added a footnote recommending IL7R RNA as the substitute.
-- `/evaluate-fit` — methods built around large CITE-seq panels (e.g., dsb Step II, MMoCHi) were demoted from "Good" to "Moderate" because the functional panel was effectively 4 markers, not 5.
-- `/design-analysis` — every code template that gated on CD127 protein substituted `adata.X[:, gene2idx['IL7R']]` for `adata.obsm['protein'][:, panel.index('CD127')]`.
+- `/mine-paper` — every evidence file that quoted a gate on Marker_X added a footnote recommending GENE_X RNA as the substitute.
+- `/evaluate-fit` — methods built around large CITE-seq panels (e.g., dsb Step II, MMoCHi) were demoted from "Good" to "Moderate" because the functional panel was effectively smaller than the validated minimum.
+- `/design-analysis` — every code template that gated on Marker_X protein substituted `adata.X[:, gene2idx['GENE_X']]` for `adata.obsm['protein'][:, panel.index('Marker_X')]`.
 
 This is the highest-value pattern the workflow surfaces: a single field in `context.md` ripples through dozens of downstream decisions.
 

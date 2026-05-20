@@ -23,7 +23,7 @@ DEFAULT_PROMPTS = {
     "harmonize": "Harmonize the KB documents for this method with $harmonize.",
     "index-docs": "Index a package documentation site with $index-docs.",
     "learn-code": "Map a method's implementation to its theory with $learn-code.",
-    "mine-paper": "Mine biology papers for project-specific intel with $mine-paper.",
+    "mine-paper": "Mine biology papers for project-specific evidence with $mine-paper.",
     "read-paper": "Extract a method paper concept summary with $read-paper.",
     "review-knowledge": "Review a method KB entry with $review-knowledge.",
     "run-pipeline": "Run the end-to-end project pipeline with $run-pipeline.",
@@ -42,12 +42,12 @@ SHORT_DESCRIPTIONS = {
     "harmonize": "Align terminology and cross-references across a method KB entry.",
     "index-docs": "Index package docs into an agent-friendly navigation layer.",
     "learn-code": "Map a method's theory to its implementation.",
-    "mine-paper": "Extract project-specific intel from biology papers.",
+    "mine-paper": "Extract project-specific evidence from biology papers.",
     "read-paper": "Extract concepts and metadata from a method paper.",
     "review-knowledge": "Review a method KB entry for quality and consistency.",
     "run-pipeline": "Run the per-project literature-to-analysis pipeline end to end.",
     "split-supplement": "Split and process large supplementary PDFs.",
-    "synthesize-literature": "Synthesize mined paper intel into consensus hypotheses.",
+    "synthesize-literature": "Synthesize mined paper evidence into consensus hypotheses.",
     "understand-theory": "Extract mathematical and statistical foundations from a paper.",
 }
 
